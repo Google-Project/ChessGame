@@ -7,7 +7,7 @@ function initializeBoard(){
 
 var cells = document.querySelectorAll('td');
 cells.forEach(element=>{
-    element.piece = "pawn";
+    element.piece = Pawn()
 })
 cells.forEach(element=>{
     if (element.piece == "pawn"){
