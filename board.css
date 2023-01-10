@@ -50,3 +50,13 @@ body{
 h1{
     text-align: center;
 }
+
+#minutes{
+    text-align: center;
+    font-size: 30px;
+    margin-left: 45%;
+}
+#seconds{
+    text-align: center;
+    font-size: 30px;
+}
