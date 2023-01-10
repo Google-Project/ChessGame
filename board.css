@@ -46,3 +46,7 @@ body{
     background-color: rgb(104, 101, 101);
     border-spacing: 0;
 }
+
+h1{
+    text-align: center;
+}
