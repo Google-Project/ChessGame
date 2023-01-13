@@ -7,6 +7,7 @@ class Cell{
     constructor(){
         this.location = null;   
         this.item = null;       
+        this.element = document.createElement('td');
     }
 
     //Setter
@@ -24,6 +25,9 @@ class Cell{
     getLocation(){
         return this.location;
     }
+    getElement(){
+        return this.element;
+    }
 }
 
 /*
@@ -32,11 +36,15 @@ class Cell{
 */
 class ChessPiece{
     //Default Properties for all chess pieces.
-    contructor(){
-        this.location = null;
-        this.color = null;
-        this.type = null;
+    constructor(location, color, type){
+        this.location = location;
+        this.color = color;
+        this.type = type;
         this.isAlive = true;
+
+        this.element = document.createElement('img');
+        this.element.classList.add('chess-piece');
+        this.element.src = 'chess_models/chess_pieces/' + color + '-' + type + '.png';
     }
 
     //Setter
@@ -66,12 +74,15 @@ class ChessPiece{
     getIsAlive(){
         return this.isAlive;
     }
+    getElement(){
+        return this.element;
+    }
 }
 
 //Child Classes that inherit from the ChessPiece class.
 class Pawn extends ChessPiece{
-    constructor(){
-        super();
+    constructor(location, color, type){
+        super(location, color, type);
         this.firstMove = true; //A pawn can move 1-2 cells when it makes its first move
     }
 
@@ -80,36 +91,36 @@ class Pawn extends ChessPiece{
 }
 
 class Knight extends ChessPiece{
-    constructor(){
-        super();
+    constructor(location, color, type){
+        super(location, color, type);
     }
     listMoves(){}
 }
 
 class Bishop extends ChessPiece{
-    constructor(){
-        super();
+    constructor(location, color, type){
+        super(location, color, type);
     }
     listMoves(){}
 }
 
 class Rook extends ChessPiece{
-    constructor(){
-        super();
+    constructor(location, color, type){
+        super(location, color, type);
     }
     listMoves(){}
 }
 
 class King extends ChessPiece{
-    constructor(){
-        super();
+    constructor(location, color, type){
+        super(location, color, type);
     }
     listMoves(){}
 }
 
 class Queen extends ChessPiece{
-    constructor(){
-        super();
+    constructor(location, color, type){
+        super(location, color, type);
     }
     listMoves(){}
 }
