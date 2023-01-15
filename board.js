@@ -47,6 +47,9 @@ function initializeBoard(){
             
             //Finally, append our cell element to the current <tr>
             tr.appendChild(cellElement);
+
+            // onclick for cell object to display possible moves
+            cellElement.onclick = function(){displayHighlighted(cell)};
         }
     }
 }
@@ -125,3 +128,13 @@ function startTimer(){
     }, 1000);
 }
 
+// displays possible moves
+function displayHighlighted(cell){
+    var piece = cell.getItem();
+    if (piece!=null){
+        piece.listMoves().forEach(function(location){
+            let td = board[location[0]][location[1]].getElement();
+            td.style.backgroundColor = "blue";
+        });
+    }
+}
