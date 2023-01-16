@@ -124,12 +124,13 @@ class Pawn extends ChessPiece{
             if(Pawn.inBound(move)){
                 possibleMoves.push(move);
             }
-            //turn off firstMost
+            //turn off firstMove
             this.firstMove = false;
         }
 
         //function to detect enemy and eat
         //also remember en pessant 
+        //if pawn is on the other side, give option to change pawn's type
 
         return possibleMoves;
     }
@@ -152,21 +153,6 @@ class Knight extends ChessPiece{
         possibleMoves.push([this.location[0] + 2, this.location[1] + 1]);
         possibleMoves.push([this.location[0] + 1, this.location[1] + 2]);
 
-        /*
-            White:
-                up 1, right/left 2
-                down 1, right/left 2
-
-                or
-
-                up 2, right/left 1
-                down 2, right/left 1
-
-            Black:
-                Same thing for knight. 
-                As Wei suggested to add more checks, we will be 
-                talking about this in tomorrow's meeting. 
-        */
        return possibleMoves;
     }
 }
@@ -210,6 +196,7 @@ class Bishop extends ChessPiece{
                 break;
             }
         }
+        return arr;
     }
 }
 
@@ -248,6 +235,7 @@ class Rook extends ChessPiece{
             if (board[this.location[0]][i].getItem() != null)
             break;
         }
+        return arr;
     }
 }
 
