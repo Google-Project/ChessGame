@@ -102,7 +102,23 @@ class Knight extends ChessPiece{
         super(location, color, type);
     }
     listMoves(){
+        let possibleMoves = [];
+        //Available Moves without any checks (for now)
+        /*
+            White:
+                up 1, right/left 2
+                down 1, right/left 2
 
+                or
+
+                up 2, right/left 1
+                down 2, right/left 1
+
+            Black:
+                Same thing for knight. 
+                As Wei suggested to add more checks, we will be 
+                talking about this in tomorrow's meeting. 
+        */
     }
 }
 
