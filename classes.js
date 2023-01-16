@@ -87,14 +87,23 @@ class Pawn extends ChessPiece{
     }
 
     //Calculate and return the available moves for a chess piece
-    listMoves(){}
+    listMoves(){
+        let possibleMoves = [];
+        possibleMoves.push([this.location[0], this.location[1] + 1]);
+        if(this.firstMove){
+            possibleMoves.push([this.location[0], this.location[1] +2]);
+        }
+        return possibleMoves;
+    }
 }
 
 class Knight extends ChessPiece{
     constructor(location, color, type){
         super(location, color, type);
     }
-    listMoves(){}
+    listMoves(){
+
+    }
 }
 
 class Bishop extends ChessPiece{
