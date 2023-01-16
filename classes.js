@@ -124,7 +124,13 @@ class Pawn extends ChessPiece{
             if(Pawn.inBound(move)){
                 possibleMoves.push(move);
             }
+            //turn off firstMost
+            this.firstMove = false;
         }
+
+        //function to detect enemy and eat
+        //also remember en pessant 
+
         return possibleMoves;
     }
 }
@@ -135,7 +141,17 @@ class Knight extends ChessPiece{
     }
     listMoves(){
         let possibleMoves = [];
+
         //Available Moves without any checks (for now)
+        possibleMoves.push([this.location[0] - 1, this.location[1] - 2]);
+        possibleMoves.push([this.location[0] - 2, this.location[1] - 1]);
+        possibleMoves.push([this.location[0] + 1, this.location[1] - 2]);
+        possibleMoves.push([this.location[0] + 2, this.location[1] - 1]);
+        possibleMoves.push([this.location[0] - 2, this.location[1] + 1]);
+        possibleMoves.push([this.location[0] - 1, this.location[1] + 2]);
+        possibleMoves.push([this.location[0] + 2, this.location[1] + 1]);
+        possibleMoves.push([this.location[0] + 1, this.location[1] + 2]);
+
         /*
             White:
                 up 1, right/left 2
@@ -151,28 +167,115 @@ class Knight extends ChessPiece{
                 As Wei suggested to add more checks, we will be 
                 talking about this in tomorrow's meeting. 
         */
+       return possibleMoves;
     }
 }
 
 class Bishop extends ChessPiece{
     constructor(location, color, type){
         super(location, color, type);
+        
     }
-    listMoves(){}
+    listMoves(){
+        var arr = [];
+
+        // Move Diagonally Down Right
+        for (let i = 1; isInBoard([this.location[0] + i,this.location[1] + i]); i++){
+            arr.push([this.location[0] + i, this.location[1] + i]);
+            if (board[this.location[0] + i][this.location[1] + i].getItem() != null){
+                break;
+            }
+        }
+
+        // Move Diagonally Down Left
+        for (let i = 1; isInBoard([this.location[0] + i,this.location[1] - i]); i++){
+            arr.push([this.location[0] + i, this.location[1] - i]);
+            if (board[this.location[0] + i][this.location[1] - i].getItem() != null){
+                break;
+            }
+        }
+
+        // Move Diagonally Up Right
+        for (let i = 1; isInBoard([this.location[0] - i,this.location[1] + i]); i++){
+            arr.push([this.location[0] - i, this.location[1] + i]);
+            if (board[this.location[0] - i][this.location[1] + i].getItem() != null){
+                break;
+            }
+        }
+
+        // Move Diagonally Up Left
+        for (let i = 1; isInBoard([this.location[0] - i,this.location[1] - i]); i++){
+            arr.push([this.location[0] - i, this.location[1] - i]);
+            if (board[this.location[0] - i][this.location[1] - i].getItem() != null){
+                break;
+            }
+        }
+    }
 }
 
 class Rook extends ChessPiece{
     constructor(location, color, type){
         super(location, color, type);
     }
-    listMoves(){}
+    listMoves(){
+        var arr = [];
+
+        // Gets all possible Move locations and stops moving at the first chess piece (including white and black) 
+        // Move Down
+        for (let i = this.location[0] + 1; i < board.length; i++){
+            arr.push([i,this.location[1]]);
+            if (board[i][this.location[1]].getItem() != null)
+            break;
+        }
+
+        // Move Up
+        for (let i = this.location[0] - 1; i >= 0; i--){
+            arr.push([i,this.location[1]]);
+            if (board[i][this.location[1]].getItem() != null)
+            break;
+        }
+
+        // Move Right
+        for (let i = this.location[1] + 1; i < board.length; i++){
+            arr.push([this.location[0],i]);
+            if (board[this.location[0]][i].getItem() != null)
+            break;
+        }
+        
+        // Move Left
+        for (let i = this.location[1] - 1; i >= 0; i--){
+            arr.push([this.location[0],i]);
+            if (board[this.location[0]][i].getItem() != null)
+            break;
+        }
+    }
 }
 
 class King extends ChessPiece{
     constructor(location, color, type){
         super(location, color, type);
     }
-    listMoves(){}
+
+    listMoves(){
+        let possibleMoves = [];
+
+        //Available Moves without any checks (for now)
+        //move down, but missing check for border
+        possibleMoves.push([this.location[0] - 1, this.location[1] - 1]);
+        possibleMoves.push([this.location[0], this.location[1] - 1]);
+        possibleMoves.push([this.location[0] + 1, this.location[1] - 1]);
+        //sideways
+        possibleMoves.push([this.location[0] - 1, this.location[1]]);
+        possibleMoves.push([this.location[0] + 1, this.location[1]]);
+        //up
+        possibleMoves.push([this.location[0] - 1, this.location[1] + 1]);
+        possibleMoves.push([this.location[0], this.location[1] + 1]);
+        possibleMoves.push([this.location[0] + 1, this.location[1] + 1]);
+
+        //add function for castle move
+
+        return possibleMoves;
+    }
 }
 
 class Queen extends ChessPiece{
