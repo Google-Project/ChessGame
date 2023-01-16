@@ -99,14 +99,39 @@ class Pawn extends ChessPiece{
     }
 
     //Calculate and return the available moves for a chess piece
-    listMoves(){}
+    listMoves(){
+        let possibleMoves = [];
+        possibleMoves.push([this.location[0], this.location[1] + 1]);
+        if(this.firstMove){
+            possibleMoves.push([this.location[0], this.location[1] +2]);
+        }
+        return possibleMoves;
+    }
 }
 
 class Knight extends ChessPiece{
     constructor(location, color, type){
         super(location, color, type);
     }
-    listMoves(){}
+    listMoves(){
+        let possibleMoves = [];
+        //Available Moves without any checks (for now)
+        /*
+            White:
+                up 1, right/left 2
+                down 1, right/left 2
+
+                or
+
+                up 2, right/left 1
+                down 2, right/left 1
+
+            Black:
+                Same thing for knight. 
+                As Wei suggested to add more checks, we will be 
+                talking about this in tomorrow's meeting. 
+        */
+    }
 }
 
 class Bishop extends ChessPiece{
