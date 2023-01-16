@@ -138,3 +138,13 @@ function displayHighlighted(cell){
         });
     }
 }
+
+// Returns true if the location is within the bounds of the board
+function isInBoard(location){
+    let a = location[0];
+    let b = location[1];
+    if (a >= 0 && a < board.length)
+        if (b >= 0 && b < board.length)
+            return true;
+    return false;
+}
