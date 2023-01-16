@@ -88,6 +88,17 @@ class ChessPiece{
         }
         return false;
     }
+
+    //function to check if pieces go out of bounds
+    inBound(arr){
+        if (arr[0] < 0 || 
+            arr[0] > 7 || 
+            arr[1] < 0 || 
+            arr[1] > 7){
+                return false;
+        }
+        return true;
+    }
     
 }
 
@@ -101,9 +112,18 @@ class Pawn extends ChessPiece{
     //Calculate and return the available moves for a chess piece
     listMoves(){
         let possibleMoves = [];
-        possibleMoves.push([this.location[0], this.location[1] + 1]);
-        if(this.firstMove){
-            possibleMoves.push([this.location[0], this.location[1] +2]);
+        let move = [];
+
+        move = [this.location[0], this.location[1] + 1];
+        if(Pawn.inBound(move)){
+            possibleMoves.push(move);
+        }
+
+        if (this.firstMove){
+            move = [this.location[0], this.location[1] +2];
+            if(Pawn.inBound(move)){
+                possibleMoves.push(move);
+            }
         }
         return possibleMoves;
     }
