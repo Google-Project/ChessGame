@@ -48,8 +48,8 @@ function initializeBoard(){
             //Finally, append our cell element to the current <tr>
             tr.appendChild(cellElement);
 
-            // onclick for cell object to display possible moves
-            cellElement.onclick = function(){displayHighlighted(cell)};
+            // onclick for cell object to Highlight cells where chess pieces at the cell can possibly moves
+            cellElement.onclick = function(){highlightPossibleMoves(cell)};
         }
     }
 }
@@ -128,8 +128,8 @@ function startTimer(){
     }, 1000);
 }
 
-// displays possible moves
-function displayHighlighted(cell){
+// Highlight cells where chess pieces at the cell can possibly moves
+function highlightPossibleMoves(cell){
     var piece = cell.getItem();
     if (piece!=null){
         piece.listMoves().forEach(function(location){
