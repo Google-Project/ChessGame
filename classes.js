@@ -114,13 +114,19 @@ class Pawn extends ChessPiece{
         let possibleMoves = [];
         let move = [];
 
-        move = [this.location[0], this.location[1] + 1];
+        //The moves differ when the pawn is black/white, so check for that.
+        move = [this.location[0], this.location[1]];
         if(Pawn.inBound(move)){
             possibleMoves.push(move);
         }
 
+        
+        //Same here, white pawn can only move to board[row-2][col]
+        //and black pawn can only move to board[row+2][col]. Please fix this.
+        //Also, if there is a piece blocking the current pawn's 
+        //path, 'this.firstMove' should not be set to false. 
         if (this.firstMove){
-            move = [this.location[0], this.location[1] +2];
+            move = [this.location[0] + 2, this.location[1]];
             if(Pawn.inBound(move)){
                 possibleMoves.push(move);
             }
@@ -141,17 +147,44 @@ class Knight extends ChessPiece{
         super(location, color, type);
     }
     listMoves(){
+        //Possible moves the knight can take.
         let possibleMoves = [];
 
-        //Available Moves without any checks (for now)
-        possibleMoves.push([this.location[0] - 1, this.location[1] - 2]);
-        possibleMoves.push([this.location[0] - 2, this.location[1] - 1]);
-        possibleMoves.push([this.location[0] + 1, this.location[1] - 2]);
-        possibleMoves.push([this.location[0] + 2, this.location[1] - 1]);
-        possibleMoves.push([this.location[0] - 2, this.location[1] + 1]);
-        possibleMoves.push([this.location[0] - 1, this.location[1] + 2]);
-        possibleMoves.push([this.location[0] + 2, this.location[1] + 1]);
-        possibleMoves.push([this.location[0] + 1, this.location[1] + 2]);
+        //Move set (the paths it CAN take)
+        let moveSet = [
+            [this.location[0] - 1, this.location[1] - 2], [this.location[0] - 2, this.location[1] - 1],
+            [this.location[0] + 1, this.location[1] - 2], [this.location[0] + 2, this.location[1] - 1],
+            [this.location[0] - 2, this.location[1] + 1], [this.location[0] - 1, this.location[1] + 2],
+            [this.location[0] + 2, this.location[1] + 1], [this.location[0] + 1, this.location[1] + 2]
+        ];
+  
+        //Check if any moves in the moveSet can be added to possibleMoves
+        moveSet.forEach(move => {
+            [x2,y2] = move;
+            /*
+                In order to make a valid move, we must check for the followings:
+                1. The new location is empty (no chess piece is there).
+                2. The new location contains chess piece with the opposite color (to be eaten)
+                3. Our king is not checked. If our king is checked, then either our king must move
+                   or there is at least one piece of the same color that can 'block' the king to stop
+                   a check. 
+                4. The new location is not out of bounds.
+                5. If we decide to take the new move, our king should not be checked. This can happen
+                   if the current piece is already blocking a check. 
+
+                Idea to do checks:
+                1. Once a chess piece has moved, we will mark the ranges it covers as 'protected'.
+                If the range includes a piece of an opposing color, that piece will be marked 'threatened'.
+
+                Also, once a piece is decided to move to a new cell, reset the 'protected/threatened' cells/pieces
+                before moving to the new cell, in which we will have new 'protected' and 'threatened' pieces.
+
+                This will be discussed in our next meeting. 
+            */
+            
+
+        });
+
 
        return possibleMoves;
     }
