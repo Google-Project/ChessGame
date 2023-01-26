@@ -160,7 +160,12 @@ class Knight extends ChessPiece{
   
         //Check if any moves in the moveSet can be added to possibleMoves
         moveSet.forEach(move => {
-            [x2,y2] = move;
+            if (isInBoard(move)){
+                let square = board[move[0]][move[1]];
+                if (!(square.getItem() != null && square.getItem().getColor()==this.color)){
+                    possibleMoves.push(move);
+                }
+            }
             /*
                 In order to make a valid move, we must check for the followings:
                 1. The new location is empty (no chess piece is there).
