@@ -234,6 +234,13 @@ class Bishop extends ChessPiece{
             if (!isEmpty([this.location[0] - i,this.location[1] - i])){
                 break;
             }
+        }         
+        
+        // Remove squares with pieces of the same color
+        for (let i = arr.length - 1; i >= 0; i--){
+            if (!isEmpty(arr[i]) && this.isSameTeamAtLocation(arr[i])){
+                arr.splice(i,1);
+            }
         }
         return arr;
     }
@@ -273,6 +280,13 @@ class Rook extends ChessPiece{
             arr.push([this.location[0],i]);
             if (board[this.location[0]][i].getItem() != null)
             break;
+        }
+
+        // Remove squares with pieces of the same color
+        for (let i = arr.length - 1; i >= 0; i--){
+            if (!isEmpty(arr[i]) && this.isSameTeamAtLocation(arr[i])){
+                arr.splice(i,1);
+            }
         }
         return arr;
     }
