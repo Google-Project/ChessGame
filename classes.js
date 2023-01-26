@@ -112,29 +112,30 @@ class Pawn extends ChessPiece{
 
     //Calculate and return the available moves for a chess piece
     listMoves(){
+        var displacement;
+        if (this.color == "white")
+            displacement = -1;
+        else
+            displacement = 1;
+
         let possibleMoves = [];
         let move = [];
-
         //The moves differ when the pawn is black/white, so check for that.
-        move = [this.location[0], this.location[1]];
-        if(Pawn.inBound(move)){
+        move = [this.location[0] + displacement, this.location[1]];
+        if(isInBoard(move) && (isEmpty(move) || !this.isSameTeamAtLocation(move))){
             possibleMoves.push(move);
         }
-
-        
-        //Same here, white pawn can only move to board[row-2][col]
-        //and black pawn can only move to board[row+2][col]. Please fix this.
-        //Also, if there is a piece blocking the current pawn's 
-        //path, 'this.firstMove' should not be set to false. 
-        if (this.firstMove){
-            move = [this.location[0] + 2, this.location[1]];
-            if(Pawn.inBound(move)){
-                possibleMoves.push(move);
+            
+        if (possibleMoves.length == 1 && isEmpty(move)){
+            if (this.firstMove){
+                move = [this.location[0] + (2 * displacement), this.location[1]];
+                if(isInBoard(move) && (isEmpty(move) || !this.isSameTeamAtLocation(move))){
+                    possibleMoves.push(move);
+                }
+                //turn off firstMove
+                this.firstMove = false;
             }
-            //turn off firstMove
-            this.firstMove = false;
         }
-
         //function to detect enemy and eat
         //also remember en pessant 
         //if pawn is on the other side, give option to change pawn's type
