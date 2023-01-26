@@ -81,8 +81,9 @@ class ChessPiece{
     // Returns true if the piece at the location is in the same team
     isSameTeamAtLocation(location){
         let square = board[location[0]][location[1]];
-        if (square.getItem() == null)
+        if (square.getItem() == null){
             // throw exception
+        }
         if (square.getItem().getColor()==this.color){
             return true;
         }
