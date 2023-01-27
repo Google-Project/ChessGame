@@ -313,6 +313,12 @@ class King extends ChessPiece{
         possibleMoves.push([this.location[0], this.location[1] + 1]);
         possibleMoves.push([this.location[0] + 1, this.location[1] + 1]);
 
+        // Remove squares with pieces of the same color
+        for (let i = possibleMoves.length - 1; i >= 0; i--){
+            if (!isEmpty(possibleMoves[i]) && this.isSameTeamAtLocation(possibleMoves[i])){
+                possibleMoves.splice(i,1);
+            }
+        }
         //add function for castle move
 
         return possibleMoves;
