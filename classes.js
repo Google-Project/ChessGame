@@ -99,6 +99,22 @@ class ChessPiece{
         }
         return true;
     }
+
+    // returns all possible moves that the enemy can take
+    // Output: Set, so there are no duplicates
+    allPossibleEnemyMoves(){
+        var output = new Set();
+        board.forEach(function(element){
+            element.forEach(function(cell){
+                if (!cell.isEmpty() && !isSameTeamAtLocation(cell.getLocation())){
+                    cell.getItem().listMoves().forEach(function(move){
+                        output.add(move);
+                    });
+                }
+            });
+        });
+        return output;
+    }
     
 }
 
