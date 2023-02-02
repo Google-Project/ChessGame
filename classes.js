@@ -313,6 +313,11 @@ class King extends ChessPiece{
 
         return possibleMoves;
     }
+
+    isInCheck(){
+        var enemyMoves = this.allPossibleEnemyMoves(); //an array containing all possible moves that can be done by the enemy
+        return enemyMoves.has(this.getLocation());
+    }
 }
 
 class Queen extends ChessPiece{
