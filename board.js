@@ -158,3 +158,10 @@ function isInBoard(location){
 function isEmpty(location){
     return board[location[0]][location[1]].getItem() == null;
 }
+
+function highlightArrayOfLocations(arr){
+    arr.forEach(function(location){
+        let td = board[location[0]][location[1]].getElement();
+        td.style.backgroundColor = "blue";
+    });
+}
