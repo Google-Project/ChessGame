@@ -132,8 +132,8 @@ class Pawn extends ChessPiece{
                 if(isInBoard(move) && (isEmpty(move) || !this.isSameTeamAtLocation(move))){
                     possibleMoves.push(move);
                 }
-                //turn off firstMove
-                this.firstMove = false;
+                //turn off firstMove (should be turned off after the first MOVE, not the list of moves)
+                // this.firstMove = false;
             }
         }
         //function to detect enemy and eat
