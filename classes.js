@@ -105,9 +105,10 @@ class ChessPiece{
     // Output: Set, so there are no duplicates
     allPossibleEnemyMoves(){
         var output = new Set();
+        var thispiece = this;
         board.forEach(function(element){
             element.forEach(function(cell){
-                if (!cell.isEmpty() && !isSameTeamAtLocation(cell.getLocation())){
+                if (!isEmpty(cell.getLocation()) && !thispiece.isSameTeamAtLocation(cell.getLocation())){
                     cell.getItem().listMoves().forEach(function(move){
                         output.add(move);
                     });
