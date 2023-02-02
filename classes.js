@@ -81,8 +81,9 @@ class ChessPiece{
     // Returns true if the piece at the location is in the same team
     isSameTeamAtLocation(location){
         let square = board[location[0]][location[1]];
-        if (square.getItem() == null)
+        if (square.getItem() == null){
             // throw exception
+        }
         if (square.getItem().getColor()==this.color){
             return true;
         }
@@ -127,29 +128,30 @@ class Pawn extends ChessPiece{
 
     //Calculate and return the available moves for a chess piece
     listMoves(){
+        var displacement;
+        if (this.color == "white")
+            displacement = -1;
+        else
+            displacement = 1;
+
         let possibleMoves = [];
         let move = [];
-
         //The moves differ when the pawn is black/white, so check for that.
-        move = [this.location[0], this.location[1]];
-        if(Pawn.inBound(move)){
+        move = [this.location[0] + displacement, this.location[1]];
+        if(isInBoard(move) && (isEmpty(move) || !this.isSameTeamAtLocation(move))){
             possibleMoves.push(move);
         }
-
-        
-        //Same here, white pawn can only move to board[row-2][col]
-        //and black pawn can only move to board[row+2][col]. Please fix this.
-        //Also, if there is a piece blocking the current pawn's 
-        //path, 'this.firstMove' should not be set to false. 
-        if (this.firstMove){
-            move = [this.location[0] + 2, this.location[1]];
-            if(Pawn.inBound(move)){
-                possibleMoves.push(move);
+            
+        if (possibleMoves.length == 1 && isEmpty(move)){
+            if (this.firstMove){
+                move = [this.location[0] + (2 * displacement), this.location[1]];
+                if(isInBoard(move) && (isEmpty(move) || !this.isSameTeamAtLocation(move))){
+                    possibleMoves.push(move);
+                }
+                //turn off firstMove
+                this.firstMove = false;
             }
-            //turn off firstMove
-            this.firstMove = false;
         }
-
         //function to detect enemy and eat
         //also remember en pessant 
         //if pawn is on the other side, give option to change pawn's type
@@ -176,7 +178,11 @@ class Knight extends ChessPiece{
   
         //Check if any moves in the moveSet can be added to possibleMoves
         moveSet.forEach(move => {
-            [x2,y2] = move;
+            if (isInBoard(move)){
+                if (isEmpty(move) || !this.isSameTeamAtLocation(move)){
+                    possibleMoves.push(move);
+                }
+            }
             /*
                 In order to make a valid move, we must check for the followings:
                 1. The new location is empty (no chess piece is there).
@@ -217,7 +223,7 @@ class Bishop extends ChessPiece{
         // Move Diagonally Down Right
         for (let i = 1; isInBoard([this.location[0] + i,this.location[1] + i]); i++){
             arr.push([this.location[0] + i, this.location[1] + i]);
-            if (board[this.location[0] + i][this.location[1] + i].getItem() != null){
+            if (!isEmpty([this.location[0] + i,this.location[1] + i])){
                 break;
             }
         }
@@ -225,7 +231,7 @@ class Bishop extends ChessPiece{
         // Move Diagonally Down Left
         for (let i = 1; isInBoard([this.location[0] + i,this.location[1] - i]); i++){
             arr.push([this.location[0] + i, this.location[1] - i]);
-            if (board[this.location[0] + i][this.location[1] - i].getItem() != null){
+            if (!isEmpty([this.location[0] + i,this.location[1] - i])){
                 break;
             }
         }
@@ -233,7 +239,7 @@ class Bishop extends ChessPiece{
         // Move Diagonally Up Right
         for (let i = 1; isInBoard([this.location[0] - i,this.location[1] + i]); i++){
             arr.push([this.location[0] - i, this.location[1] + i]);
-            if (board[this.location[0] - i][this.location[1] + i].getItem() != null){
+            if (!isEmpty([this.location[0] - i,this.location[1] + i])){
                 break;
             }
         }
@@ -241,8 +247,15 @@ class Bishop extends ChessPiece{
         // Move Diagonally Up Left
         for (let i = 1; isInBoard([this.location[0] - i,this.location[1] - i]); i++){
             arr.push([this.location[0] - i, this.location[1] - i]);
-            if (board[this.location[0] - i][this.location[1] - i].getItem() != null){
+            if (!isEmpty([this.location[0] - i,this.location[1] - i])){
                 break;
+            }
+        }         
+        
+        // Remove squares with pieces of the same color
+        for (let i = arr.length - 1; i >= 0; i--){
+            if (!isEmpty(arr[i]) && this.isSameTeamAtLocation(arr[i])){
+                arr.splice(i,1);
             }
         }
         return arr;
@@ -258,31 +271,38 @@ class Rook extends ChessPiece{
 
         // Gets all possible Move locations and stops moving at the first chess piece (including white and black) 
         // Move Down
-        for (let i = this.location[0] + 1; i < board.length; i++){
+        for (let i = this.location[0] + 1; isInBoard([i,this.location[1]]); i++){
             arr.push([i,this.location[1]]);
             if (board[i][this.location[1]].getItem() != null)
             break;
         }
 
         // Move Up
-        for (let i = this.location[0] - 1; i >= 0; i--){
+        for (let i = this.location[0] - 1;isInBoard([i,this.location[1]]); i--){
             arr.push([i,this.location[1]]);
             if (board[i][this.location[1]].getItem() != null)
             break;
         }
 
         // Move Right
-        for (let i = this.location[1] + 1; i < board.length; i++){
+        for (let i = this.location[1] + 1; isInBoard([this.location[0],i]); i++){
             arr.push([this.location[0],i]);
             if (board[this.location[0]][i].getItem() != null)
             break;
         }
         
         // Move Left
-        for (let i = this.location[1] - 1; i >= 0; i--){
+        for (let i = this.location[1] - 1;isInBoard([this.location[0],i]); i--){
             arr.push([this.location[0],i]);
             if (board[this.location[0]][i].getItem() != null)
             break;
+        }
+
+        // Remove squares with pieces of the same color
+        for (let i = arr.length - 1; i >= 0; i--){
+            if (!isEmpty(arr[i]) && this.isSameTeamAtLocation(arr[i])){
+                arr.splice(i,1);
+            }
         }
         return arr;
     }
@@ -309,6 +329,12 @@ class King extends ChessPiece{
         possibleMoves.push([this.location[0], this.location[1] + 1]);
         possibleMoves.push([this.location[0] + 1, this.location[1] + 1]);
 
+        // Remove squares with pieces of the same color
+        for (let i = possibleMoves.length - 1; i >= 0; i--){
+            if (!isEmpty(possibleMoves[i]) && this.isSameTeamAtLocation(possibleMoves[i])){
+                possibleMoves.splice(i,1);
+            }
+        }
         //add function for castle move
 
         return possibleMoves;
@@ -331,28 +357,28 @@ class Queen extends ChessPiece{
         // Gets all possible Move locations and stops moving at the first chess piece (including white and black) 
 
         // Move Down
-        for (let i = this.location[0] + 1; i < board.length; i++){
+        for (let i = this.location[0] + 1; isInBoard([i, this.location[1]]); i++){
             arr.push([i,this.location[1]]);
             if (board[i][this.location[1]].getItem() != null)
             break;
         }
 
         // Move Up
-        for (let i = this.location[0] - 1; i >= 0; i--){
+        for (let i = this.location[0] - 1; isInBoard([i, this.location[1]]); i--){
             arr.push([i,this.location[1]]);
             if (board[i][this.location[1]].getItem() != null)
             break;
         }
 
         // Move Right
-        for (let i = this.location[1] + 1; i < board.length; i++){
+        for (let i = this.location[1] + 1; isInBoard([this.location[0],i]); i++){
             arr.push([this.location[0],i]);
             if (board[this.location[0]][i].getItem() != null)
             break;
         }
         
         // Move Left
-        for (let i = this.location[1] - 1; i >= 0; i--){
+        for (let i = this.location[1] - 1; isInBoard([this.location[0],i]); i--){
             arr.push([this.location[0],i]);
             if (board[this.location[0]][i].getItem() != null)
             break;
@@ -392,8 +418,7 @@ class Queen extends ChessPiece{
 
         // Remove squares with pieces of the same color
         for (let i = arr.length - 1; i >= 0; i--){
-            let square = board[arr[i][0]][arr[i][1]];
-            if (square.getItem() != null && square.getItem().getColor()==this.color){
+            if (!isEmpty(arr[i]) && this.isSameTeamAtLocation(arr[i])){
                 arr.splice(i,1);
             }
         }
