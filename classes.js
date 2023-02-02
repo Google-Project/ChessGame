@@ -341,6 +341,7 @@ class King extends ChessPiece{
         return possibleMoves;
     }
 
+    // Returns true if any enemy piece can eat the king (the king is in the piece's path)
     isInCheck(){
         var enemyMoves = this.allPossibleEnemyMoves(); //an array containing all possible moves that can be done by the enemy
         return enemyMoves.has(this.getLocation());
