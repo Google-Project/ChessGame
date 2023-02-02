@@ -1,5 +1,7 @@
 //Global Variables
 board = null;
+whiteKing = null;
+blackKing = null;
 
 //Initializes everything needed for the game.
 function initializeGame(){
@@ -72,6 +74,10 @@ function initializePiece(location, color, type){
     }
     else if (type == 'king'){
         piece = new King(location, color, type);
+        if (color=="white")
+            whiteKing = piece;
+        else
+            blackKing = piece;
     }
     else if (type == 'queen'){
         piece = new Queen(location, color, type);
