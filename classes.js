@@ -315,7 +315,7 @@ class King extends ChessPiece{
 
         // Remove squares with pieces of the same color
         for (let i = possibleMoves.length - 1; i >= 0; i--){
-            if (!isEmpty(possibleMoves[i]) && this.isSameTeamAtLocation(possibleMoves[i])){
+            if (!isInBoard(possibleMoves[i]) || (!isEmpty(possibleMoves[i]) && this.isSameTeamAtLocation(possibleMoves[i]))){
                 possibleMoves.splice(i,1);
             }
         }
