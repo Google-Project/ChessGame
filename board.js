@@ -148,3 +148,7 @@ function isInBoard(location){
             return true;
     return false;
 }
+
+function isEmpty(location){
+    return board[location[0]][location[1]].getItem() == null;
+}
