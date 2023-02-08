@@ -1,7 +1,9 @@
 //Global Variables
 board = null;
+focus = null;
 whiteKing = null;
 blackKing = null;
+
 
 //Initializes everything needed for the game.
 function initializeGame(){
@@ -50,10 +52,56 @@ function initializeBoard(){
             //Finally, append our cell element to the current <tr>
             tr.appendChild(cellElement);
 
-            // onclick for cell object to Highlight cells where chess pieces at the cell can possibly moves
-            cellElement.onclick = function(){highlightPossibleMoves(cell)};
+            // onclick for cell object to Highlight cells where chess pieces at the cell can possibly move
+            cellElement.onclick = function(e){
+                /*
+                    A click on an empty cell either means:
+                      a. No piece was clicked: nothing changes.
+                      b. A piece was clicked (focus=[somePieceObject]) so this empty cell can:
+                        1. Be a possible move for the clicked piece: focus=null, move the piece to this empty cell, etc.
+                        2. Not be a possible move for the clicked piece: nothing changes
+
+                    A click on a non-empty cell either means:
+                      a. No piece was clicked: focus=[currentPieceObject]
+                      b. A piece was clicked (focus=[clickedPieceObject]) and the current cell contains:
+                         1. the same-color piece as focus: focus=[currentPieceObject]
+                         2. a different-color piece as focus:
+                            a. the different-color piece can be eaten: eat the different-color piece, set focus=null, etc.
+                            b. the different-color piece cannot be eaten: nothing changes.
+                */
+                let cell = cellElement.object;
+                let pieceInCell = cell.getItem();
+
+                //Cell is empty
+                if (pieceInCell === null){
+                    if (focus !== null){
+                        if (focus.containMove(cell.getLocation())){
+                            //console.log('moving piece');
+                            movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
+                            focus = null;
+                        }
+                    }
+                }
+                //Cell is non-empty (a piece is clicked)
+                else{
+                    if (focus === null){
+                        focus = pieceInCell;
+                    }
+                }
+
+                //console.log(focus);
+                highlightPossibleMoves(cell)
+            };
         }
     }
+}
+
+//Moves a piece from old cell to new cell.
+function movePiece(oldCell, newCell){
+    //Replace the content of newCell by those of oldCell
+    //Then set oldCell to an empty cell.
+    newCell.setItem(oldCell.getItem());
+    newCell.getElement().appendChild(newCell.getItem().getElement());
 }
 
 //Helper function to intialize a chess piece
@@ -134,7 +182,7 @@ function startTimer(){
     }, 1000);
 }
 
-// Highlight cells where chess pieces at the cell can possibly moves
+// Highlight cells where chess pieces at the cell can possibly move
 function highlightPossibleMoves(cell){
     var piece = cell.getItem();
     if (piece!=null){
