@@ -162,12 +162,14 @@ class ChessPiece{
     allPossibleEnemyMoves(){
         var output = new Set();
         var thispiece = this;
-        board.forEach(function(cell){
-            if (!isEmpty(cell.getLocation()) && !thispiece.isSameTeamAtLocation(cell.getLocation())){
-                cell.getItem().listMoves().forEach(function(move){
-                    output.add(move);
-                })
-            }
+        board.forEach(function(element){
+            element.forEach(function(cell){
+                if (!isEmpty(cell.getLocation()) && !thispiece.isSameTeamAtLocation(cell.getLocation())){
+                    cell.getItem().listMoves().forEach(function(move){
+                        output.add(move);
+                    })
+                }
+            })
         });
         return output;
     }
