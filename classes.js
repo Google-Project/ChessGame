@@ -100,6 +100,23 @@ class ChessPiece{
         }
         return true;
     }
+
+    // returns all possible moves that the enemy can take
+    // Output: Set, so there are no duplicates
+    allPossibleEnemyMoves(){
+        var output = new Set();
+        var thispiece = this;
+        board.forEach(function(element){
+            element.forEach(function(cell){
+                if (!isEmpty(cell.getLocation()) && !thispiece.isSameTeamAtLocation(cell.getLocation())){
+                    cell.getItem().listMoves().forEach(function(move){
+                        output.add(move);
+                    });
+                }
+            });
+        });
+        return output;
+    }
     
 }
 
@@ -322,6 +339,12 @@ class King extends ChessPiece{
         //add function for castle move
 
         return possibleMoves;
+    }
+
+    // Returns true if any enemy piece can eat the king (the king is in the piece's path)
+    isInCheck(){
+        var enemyMoves = this.allPossibleEnemyMoves(); //an array containing all possible moves that can be done by the enemy
+        return enemyMoves.has(this.getLocation());
     }
 }
 
