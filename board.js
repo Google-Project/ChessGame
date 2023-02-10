@@ -83,6 +83,8 @@ function initializeBoard(){
                 }
                 //Cell is non-empty (a piece is clicked)
                 else{
+                    if (pieceInCell !== null && pieceInCell.listMoves().length > 0)
+                        focus = pieceInCell;
                     highlightPossibleMoves(cell);
                 }
 
