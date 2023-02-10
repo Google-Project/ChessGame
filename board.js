@@ -73,20 +73,16 @@ function initializeBoard(){
                 let pieceInCell = cell.getItem();
 
                 //Cell is empty
-                if (pieceInCell === null){
-                    if (focus !== null){
-                        if (focus.containMove(cell.getLocation())){
-                            //console.log('moving piece');
-                            movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
-                            focus = null;
-                        }
+                if (focus !== null){
+                    if (focus.containMove(cell.getLocation())){
+                        //console.log('moving piece');
+                        movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
+                        focus = null;
                     }
                 }
                 //Cell is non-empty (a piece is clicked)
                 else{
-                    if (focus === null){
-                        focus = pieceInCell;
-                    }
+                    focus = pieceInCell;
                 }
 
                 //console.log(focus);
