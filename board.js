@@ -76,6 +76,10 @@ function initializeBoard(){
                 if (focus !== null){
                     unhighlightLocations(focus.listMoves());
                     if (focus.containMove(cell.getLocation())){
+                        
+                        if (focus.firstMove === true)
+                            focus.firstMove = false;
+
                         //console.log('moving piece');
                         movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
                         focus = null;
