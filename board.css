@@ -5,7 +5,7 @@ body{
 .back{
     background-color: rgb(241, 241, 241);
     width: 450px;
-    height: 700px;
+    height: 800px;
     margin-right: auto;
     margin-left: auto;
     border-radius: 20px;
@@ -43,7 +43,7 @@ body{
     margin-right: 10px;
 }
 
-#deadPeiceCont{
+#aquiredPeices{
     width: 50%;
     height: 40px;
     border-radius: 10px;
@@ -54,7 +54,6 @@ body{
     display: flex;
 
 }
-
 
 .chess-board{
     width: 450px;
@@ -79,10 +78,9 @@ body{
     width: 27px;
     height: 32;
 }
-
 .chess-piece:hover{
     cursor: pointer;
-    box-shadow: 0 0px 20px rgba(0, 0, 0, 0.4);
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.4);
 }
 
 .light{
@@ -99,16 +97,54 @@ body{
     border-spacing: 0;
 }
 
+.player{
+    background-color: rgb(216, 213, 213);
+    width: 100%; 
+    height: 50px; 
+    margin-top: 10px; 
+    margin-bottom: 20px;
+}
+
+#playerIcon{
+    background-color: black;
+    width: 40px;
+    height: 40px;
+    margin-top: 5px;
+    margin-left: 10px;
+    float: left;
+    border-radius: 25px;
+}
+
+.player h4{
+    float: left;
+    margin-left: 10px;
+}
+
+#playerAquiredPeices{
+    width: 50%;
+    height: 40px;
+    border-radius: 10px;
+    float: right;
+    background-color: rgb(255, 255, 255, .2);
+    margin-top: 5px;
+    margin-right: 10px;
+    display: flex;
+
+}
+
 h1{
+    text-align: center;
+}
+
+#clock{
+    margin-top: 30px;
     text-align: center;
 }
 
 #minutes{
     text-align: center;
     font-size: 30px;
-    margin-left: 45%;
 }
-
 #seconds{
     text-align: center;
     font-size: 30px;

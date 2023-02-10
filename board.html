@@ -15,6 +15,7 @@
             <div id="spacing">
                 CHESS GAME
             </div>
+            
 
             <div class="opponent">
                 <div id="icon">
@@ -23,7 +24,8 @@
                     Opponent-BOT
                 </h4>
 
-                <div id="deadPeiceCont">
+                <div id="aquiredPeices">
+                    <!--please store all player's dead peices (the peices that the bot aquired) in this container-->
                 </div>
             </div>
 
@@ -77,17 +79,22 @@
                 </tbody>
             </table>
         </div>
-        <div class="player" style="width: 100%; height: 50px; background-color: rgb(89, 145, 236);  margin-top: 20px; margin-bottom: 20px;">
-            <div id="playerProfile" style="width: 35px; height: 35px; background-color: white; border-radius: 50%; float: left; margin-top: 5px; margin-bottom: 5px; margin-left: 10px;">  
+        <div class="player">
+            <div id="playerIcon">  
             </div>
+            <h4>
+                Player
+            </h4>
 
-            <div id="playerName" style=" color: white; margin-top: 5px; margin-left: 10px; float: left; font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; font:bold">
-                Name       
+            <div id="playerAquiredPeices">
             </div>
 
         </div>
-        <!-- <h1 class="timer">TIMER</h1> -->
-        <span id="minutes"></span>:<span id="seconds"></span>
+        <div id="clock">
+            <!-- <h1 class="timer">TIMER</h1> -->
+            <span id="minutes"></span>:<span id="seconds"></span>
+        </div>
+        
     </div>
     
     
