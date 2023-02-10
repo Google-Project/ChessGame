@@ -193,6 +193,13 @@ function highlightPossibleMoves(cell){
     }
 }
 
+function unhighlightLocations(arr){
+    arr.forEach(function(location){
+        let td = board[location[0]][location[1]].getElement();
+        td.style.backgroundColor = "";
+    });
+}
+
 // Returns true if the location is within the bounds of the board
 function isInBoard(location){
     let a = location[0];
