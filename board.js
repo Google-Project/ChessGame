@@ -3,6 +3,10 @@ board = null;
 focus = null;
 whiteKing = null;
 blackKing = null;
+blackPiecesAlive = [];
+whitePiecesAlive = [];
+blackPiecesDead = [];
+whitePiecesDead = [];
 
 
 //Initializes everything needed for the game.
@@ -136,6 +140,13 @@ function initializePiece(location, color, type){
 
     board[r][c].setItem(piece);
     board[r][c].getElement().appendChild(piece.getElement());
+
+    if (color === "white"){
+        whitePiecesAlive.push(piece);
+    }
+    else if (color === "black"){
+        blackPiecesAlive.push(piece);
+    }
 }
 
 function initializeModels(){
