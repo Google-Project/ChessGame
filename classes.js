@@ -2,12 +2,37 @@
     Cell class represents each cell in the chess board. 
 */
 class Cell{
-    //location is an [x,y] point 
-    //item checks if the cell holds a chess piece
+    /*
+        location is an [x,y] point
+        item is a chess piece object the cell holds
+        protectedByWhite contains object references to white piece(s) that protect the current cell
+        protectedByBlack contains object references to black piece(s) that protect the current cell
+    */
     constructor(){
         this.location = null;   
         this.item = null;       
+        this.protectedByWhite = []; 
+        this.protectedByBlack = []; 
         this.element = document.createElement('td');
+    }
+
+    //
+    //Adds a white piece that protects the current cell
+    addProtectedWhite(piece){
+        this.protectedByWhite.push(piece);
+    }
+
+    //Adds a black piece that protects the current cell
+    addProtectedBlack(piece){
+        this.protectedByBlack.push(piece);
+    }
+
+    emptyProtectedWhite(){
+        this.protectedByWhite = [];
+    }
+
+    emptyProtectedBlack(){
+        this.protectedByBlack = [];
     }
 
     //Setter
@@ -31,6 +56,12 @@ class Cell{
     isEmpty(){
         return this.getItem() == null;
     }
+    getProtectedWhite(){
+        return this.protectedByWhite;
+    }
+    getProtectedBlack(){
+        return this.protectedByBlack;
+    }
 }
 
 /*
@@ -44,10 +75,32 @@ class ChessPiece{
         this.color = color;
         this.type = type;
         this.isAlive = true;
+        this.protectedCells = []; //reference to Cell objects that are protected by current piece.
 
         this.element = document.createElement('img');
         this.element.classList.add('chess-piece');
         this.element.src = 'chess_models/chess_pieces/' + color + '-' + type + '.png';
+    }
+
+    addProtectedCell(cell){
+        this.protectedCells.push(cell);
+    }
+    emptyProtectedCell(){
+        this.protectedCells = [];
+    }
+    containMove(location){
+        //Checks if current piece's moves contain a specific move.
+        let [x1,y1] = location;
+        let moves = this.listMoves();
+
+        for (let i=0; i<moves.length; i++){
+            let [x2,y2] = moves[i];
+            if (x1===x2 && y1===y2){
+                return true;
+            }
+        }
+
+        return false;
     }
 
     //Setter
@@ -79,6 +132,9 @@ class ChessPiece{
     }
     getElement(){
         return this.element;
+    }
+    getProtectedCell(){
+        return this.protectedCells;
     }
 
     // Returns true if the piece at the location is in the same team
@@ -114,9 +170,9 @@ class ChessPiece{
                 if (!cell.isEmpty() && !thispiece.isSameTeamAtLocation(cell.getLocation())){
                     cell.getItem().listMoves().forEach(function(move){
                         output.add(move);
-                    });
+                    })
                 }
-            });
+            })
         });
         return output;
     }
@@ -315,6 +371,7 @@ class Rook extends ChessPiece{
 class King extends ChessPiece{
     constructor(location, color, type){
         super(location, color, type);
+        this.isChecked = false;
     }
 
     listMoves(){
@@ -344,9 +401,21 @@ class King extends ChessPiece{
         return possibleMoves;
     }
 
+    // Returns true if any enemy piece can eat the king (the king is in the piece's path)
     isInCheck(){
         var enemyMoves = this.allPossibleEnemyMoves(); //an array containing all possible moves that can be done by the enemy
-        return enemyMoves.has(this.getLocation());
+        if (enemyMoves.has(this.getLocation())){
+            this.isChecked = true;
+        }
+        else{
+            this.isChecked = false;
+        }
+        return this.isChecked;
+    }
+
+    //Getter Method to check if king is checked without recomputing eneny moves.
+    isChecked(){
+        return this.isChecked;
     }
 }
 
