@@ -255,6 +255,8 @@ function eatAtCell(cell){
     cell.getElement().removeChild(piece.getElement());
     cell.setItem(null);
     
+    let deadpiledisplay = piece.getColor() === "white" ? "acquiredPieces" : "playerAcquiredPieces";
+    document.getElementById(deadpiledisplay).appendChild(piece.getElement());
 }
 
 function removeObjectFromArray(arr, obj){
