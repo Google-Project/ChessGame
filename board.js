@@ -97,7 +97,9 @@ function movePiece(oldCell, newCell){
     //Replace the content of newCell by those of oldCell
     //Then set oldCell to an empty cell.
     newCell.setItem(oldCell.getItem());
+    oldCell.setItem(null);
     newCell.getElement().appendChild(newCell.getItem().getElement());
+    newCell.getItem().setLocation(newCell.getLocation());
 }
 
 //Helper function to intialize a chess piece
