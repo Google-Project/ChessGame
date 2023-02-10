@@ -195,14 +195,14 @@ class Pawn extends ChessPiece{
         let move = [];
         //The moves differ when the pawn is black/white, so check for that.
         move = [this.location[0] + displacement, this.location[1]];
-        if(isInBoard(move) && isEmpty(move)){
+        if(isInBoard(move) && isEmptyAtLocation(move)){
             possibleMoves.push(move);
         }
             
         if (possibleMoves.length == 1 && isEmptyAtLocation(move)){
             if (this.firstMove){
                 move = [this.location[0] + (2 * displacement), this.location[1]];
-                if(isInBoard(move) && isEmpty(move)){
+                if(isInBoard(move) && isEmptyAtLocation(move)){
                     possibleMoves.push(move);
                 }
             }
@@ -211,9 +211,9 @@ class Pawn extends ChessPiece{
         // eating diagonally
         let eat1 = [this.location[0] + displacement, this.location[1] + 1];
         let eat2 = [this.location[0] + displacement, this.location[1] - 1];
-        if(isInBoard(eat1) && (!isEmpty(eat1) && !this.isSameTeamAtLocation(eat1)))
+        if(isInBoard(eat1) && (!isEmptyAtLocation(eat1) && !this.isSameTeamAtLocation(eat1)))
             possibleMoves.push(eat1);
-        if(isInBoard(eat2) && (!isEmpty(eat2) && !this.isSameTeamAtLocation(eat2)))
+        if(isInBoard(eat2) && (!isEmptyAtLocation(eat2) && !this.isSameTeamAtLocation(eat2)))
             possibleMoves.push(eat2);
 
 
