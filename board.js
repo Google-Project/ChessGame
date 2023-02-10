@@ -74,6 +74,7 @@ function initializeBoard(){
 
                 //Cell is empty
                 if (focus !== null){
+                    unhighlightLocations(focus.listMoves());
                     if (focus.containMove(cell.getLocation())){
                         //console.log('moving piece');
                         movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
@@ -82,11 +83,10 @@ function initializeBoard(){
                 }
                 //Cell is non-empty (a piece is clicked)
                 else{
-                    focus = pieceInCell;
+                    highlightPossibleMoves(cell);
                 }
 
                 //console.log(focus);
-                highlightPossibleMoves(cell)
             };
         }
     }
