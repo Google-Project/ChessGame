@@ -96,6 +96,8 @@ function initializeBoard(){
 function movePiece(oldCell, newCell){
     //Replace the content of newCell by those of oldCell
     //Then set oldCell to an empty cell.
+    if(newCell.getItem()!==null)
+        eatAtCell(newCell);
     newCell.setItem(oldCell.getItem());
     oldCell.setItem(null);
     newCell.getElement().appendChild(newCell.getItem().getElement());
@@ -210,4 +212,12 @@ function highlightArrayOfLocations(arr){
         let td = board[location[0]][location[1]].getElement();
         td.style.backgroundColor = "blue";
     });
+}
+
+// eats the piece at given cell
+// Cell is the parameter
+function eatAtCell(cell){
+    cell.getElement().removeChild(cell.getItem().getElement());
+    cell.setItem(null);
+    // add chess piece to array
 }
