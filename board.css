@@ -3,7 +3,7 @@ body{
 }
 
 .back{
-    background-color: rgb(211, 195, 195);
+    background-color: rgb(241, 241, 241);
     width: 450px;
     height: 700px;
     margin-right: auto;
@@ -11,13 +11,50 @@ body{
     border-radius: 20px;
 }
 
-.opponent{
+#spacing{
+    text-align: center;
     margin-top: 10px;
+    margin-bottom: 10px;
+    padding-top: 20px;
+    font-size: large;
 }
 
-.player{
+.opponent{
+    background-color: rgb(216, 213, 213);
+    width: 100%; 
+    height: 50px; 
+    margin-top: 10px; 
+    margin-bottom: 20px;
+}
+
+
+#icon{
+    background-color: black;
+    width: 40px;
+    height: 40px;
+    margin-top: 5px;
+    margin-right: 10px;
+    float: right;
+    border-radius: 25px;
+}
+
+.opponent h4{
+    float: right;
+    margin-right: 10px;
+}
+
+#deadPeiceCont{
+    width: 50%;
+    height: 40px;
+    border-radius: 10px;
+    float: left;
+    background-color: rgb(255, 255, 255, .2);
+    margin-top: 5px;
+    margin-left: 10px;
+    display: flex;
 
 }
+
 
 .chess-board{
     width: 450px;
@@ -43,6 +80,11 @@ body{
     height: 32;
 }
 
+.chess-piece:hover{
+    cursor: pointer;
+    box-shadow: 0 0px 20px rgba(0, 0, 0, 0.4);
+}
+
 .light{
     width: 50px;
     height: 50px;
@@ -66,6 +108,7 @@ h1{
     font-size: 30px;
     margin-left: 45%;
 }
+
 #seconds{
     text-align: center;
     font-size: 30px;
