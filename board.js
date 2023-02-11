@@ -59,71 +59,45 @@ function initializeBoard(){
 
             // onclick for cell object to Highlight cells where chess pieces at the cell can possibly move
             cellElement.onclick = function(e){
-                /*
-                    A click on an empty cell either means:
-                      a. No piece was clicked: focus=null
-                      b. A piece was clicked (focus=[somePieceObject]) so this empty cell can:
-                        1. Be a possible move for the clicked piece: focus=null, move the piece to this empty cell, etc.
-                        2. Not be a possible move for the clicked piece: focus=null
-
-                    A click on a non-empty cell either means:
-                      a. No piece was clicked: focus=[currentPieceObject]
-                      b. A piece was clicked (focus=[clickedPieceObject]) and the current cell contains:
-                         1. the same-color piece as focus: focus=[currentPieceObject]
-                         2. a different-color piece as focus:
-                            a. the different-color piece can be eaten: eat the different-color piece, set focus=null, etc.
-                            b. the different-color piece cannot be eaten: nothing changes.
-                */
                 let cell = cellElement.object;
                 let pieceInCell = cell.getItem();
 
-                //Cell is empty and focus=[clickedPieceObject]
-                if (cell.isEmpty()){
-                    //A piece was clicked
-                    if (focus !== null){
-                        unhighlightLocations(focus.listMoves());
-                        if (focus.containMove(cell.getLocation())){
-                            if (focus.firstMove === true)
-                                focus.firstMove = false;
-    
-                            movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
-    
-                            // switches turn to black if white and vice versa
-                            turn = turn==="white" ? "black" : "white"; 
-                            focus = null;
-                        }
-                        else{
-                            focus = null;
-                        }
+                // if focus is chosen
+                if (focus !== null){
+                    unhighlightLocations(focus.listMoves());
+
+                    // if the location is a valid move (empty cell or enemy piece)
+                    if (focus.containMove(cell.getLocation())){
+                        
+                        // this is specifically for the pawn (MUST BE CHANGED FOR CASTLING)
+                        if (focus.firstMove === true)
+                            focus.firstMove = false;
+
+                        movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
+
+                        // switches turn to black if white and vice versa
+                        turn = turn==="white" ? "black" : "white";
+
+                        focus = null;
                     }
+
+                    //if location contains the same-color piece
+                    else if (focus.isSameTeamAtLocation(cell.getLocation())){
+                        focus=pieceInCell;
+                        highlightPossibleMoves(cell);
+                    }
+                  
+                    // if location is not a valid move (focus's original position), reset focus
+                    else
+                        focus = null;
                 }
-                //Cell is non-empty 
+
+                // if focus has not been chosen yet
                 else{
-                    // console.log('cell is not empty');
-                    // console.log('the current turn is ' + turn);
-                    if (focus === null && pieceInCell.getColor()===turn){
+                    // checks if there is a piece, it is of the correct color, and if it can even move in the first place
+                    if (pieceInCell !== null && pieceInCell.getColor()===turn && pieceInCell.listMoves().length > 0){
                         highlightPossibleMoves(cell);
                         focus = pieceInCell;
-                    }
-                    else if (focus !== null && focus.getColor()===turn){
-                            let moves = focus.listMoves();
-                            unhighlightLocations(focus.listMoves());
-
-                            let [x,y] = focus.getLocation();
-                            if (x === pieceInCell.getLocation()[0] && y === pieceInCell.getLocation()[1]){
-                                focus = null;
-                            }
-                            else if (focus.isSameTeamAtLocation(cell.getLocation())){
-                                //Same-color piece
-                                focus=pieceInCell;
-                                highlightPossibleMoves(cell);
-                            }
-                            else if (focus.containMove(cell.getLocation())){
-                                //Different-color piece that can be eaten
-                                movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
-                                turn = turn==="white" ? "black" : "white"; 
-                                focus = null;
-                            }
                     }
                 }
             };
@@ -132,16 +106,21 @@ function initializeBoard(){
 }
 
 //Moves a piece from old cell to new cell.
+//Replace the content of newCell by those of oldCell
+//Then set oldCell to an empty cell.
 function movePiece(oldCell, newCell){
-    //Replace the content of newCell by those of oldCell
-    //Then set oldCell to an empty cell.
-    if(newCell.getItem()!==null){
-        console.log('piece is eaten');
+    // Eats chess piece and removes any traces of piece in new cell
+    if(newCell.getItem()!==null)
         eatAtCell(newCell);
-    }
+    
+    // set cells to their appropriate items
     newCell.setItem(oldCell.getItem());
     oldCell.setItem(null);
+
+    // adds chess piece display
     newCell.getElement().appendChild(newCell.getItem().getElement());
+
+    // sets new location for chess piece
     newCell.getItem().setLocation(newCell.getLocation());
 }
 
@@ -241,6 +220,7 @@ function highlightPossibleMoves(cell){
     }
 }
 
+// Will unhighlight table cells given an array of locations
 function unhighlightLocations(arr){
     arr.forEach(function(location){
         let td = board[location[0]][location[1]].getElement();
@@ -258,7 +238,7 @@ function isInBoard(location){
     return false;
 }
 
-//Returns true if the current cell does not contain a chess piece.
+// returns whether a cell at a given location has a chesspiece
 function isEmptyAtLocation(location){
     return board[location[0]][location[1]].getItem() == null;
 }
@@ -283,13 +263,16 @@ function eatAtCell(cell){
     deadpile.push(piece);
     removeObjectFromArray(alivepile, piece);
     
+    // removes piece display from table cell and removes from cell object
     cell.getElement().removeChild(piece.getElement());
     cell.setItem(null);
     
+    // adds dead chess piece to the dead display
     let deadpiledisplay = piece.getColor() === "white" ? "acquiredPieces" : "playerAcquiredPieces";
     document.getElementById(deadpiledisplay).appendChild(piece.getElement());
 }
 
+// removes an object from an array
 function removeObjectFromArray(arr, obj){
     for (let i = 0; i < arr.length; i++){
         if (arr[i]===obj){
