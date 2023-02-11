@@ -86,12 +86,10 @@ function initializeBoard(){
                             if (focus.firstMove === true)
                                 focus.firstMove = false;
     
-                            //console.log('moving piece');
                             movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
     
                             // switches turn to black if white and vice versa
-                            turn = turn==="white" ? "black" : "white";
-    
+                            turn = turn==="white" ? "black" : "white"; 
                             focus = null;
                         }
                         else{
@@ -101,23 +99,31 @@ function initializeBoard(){
                 }
                 //Cell is non-empty 
                 else{
-                    if (pieceInCell.getColor()===turn && pieceInCell.listMoves().length > 0){
-                        if (focus === null){
-                            highlightPossibleMoves(cell);
-                            focus = pieceInCell;
-                        }
-                        else{
+                    // console.log('cell is not empty');
+                    // console.log('the current turn is ' + turn);
+                    if (focus === null && pieceInCell.getColor()===turn){
+                        highlightPossibleMoves(cell);
+                        focus = pieceInCell;
+                    }
+                    else if (focus !== null && focus.getColor()===turn){
+                            let moves = focus.listMoves();
                             unhighlightLocations(focus.listMoves());
 
                             let [x,y] = focus.getLocation();
                             if (x === pieceInCell.getLocation()[0] && y === pieceInCell.getLocation()[1]){
                                 focus = null;
                             }
-                            else{
+                            else if (focus.isSameTeamAtLocation(cell.getLocation())){
+                                //Same-color piece
                                 focus=pieceInCell;
                                 highlightPossibleMoves(cell);
                             }
-                        }
+                            else if (focus.containMove(cell.getLocation())){
+                                //Different-color piece that can be eaten
+                                movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
+                                turn = turn==="white" ? "black" : "white"; 
+                                focus = null;
+                            }
                     }
                 }
             };
@@ -129,8 +135,10 @@ function initializeBoard(){
 function movePiece(oldCell, newCell){
     //Replace the content of newCell by those of oldCell
     //Then set oldCell to an empty cell.
-    if(newCell.getItem()!==null)
+    if(newCell.getItem()!==null){
+        console.log('piece is eaten');
         eatAtCell(newCell);
+    }
     newCell.setItem(oldCell.getItem());
     oldCell.setItem(null);
     newCell.getElement().appendChild(newCell.getItem().getElement());

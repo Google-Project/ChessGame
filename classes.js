@@ -142,6 +142,10 @@ class Pawn extends ChessPiece{
 
     //Calculate and return the available moves for a chess piece
     listMoves(){
+        //This will implement hypothetical moves
+        return this.possibleMoves(); //placeholder
+    }
+    possibleMoves(){
         var displacement;
         if (this.color == "white")
             displacement = -1;
@@ -187,9 +191,13 @@ class Knight extends ChessPiece{
         super(location, color, type);
     }
     listMoves(){
+        //This will implement hypothetical moves
+        return this.possibleMoves(); //placeholder
+    }
+    possibleMoves(){
         //Possible moves the knight can take.
         let possibleMoves = [];
-
+        
         //Move set (the paths it CAN take)
         let moveSet = [
             [this.location[0] - 1, this.location[1] - 2], [this.location[0] - 2, this.location[1] - 1],
@@ -197,40 +205,18 @@ class Knight extends ChessPiece{
             [this.location[0] - 2, this.location[1] + 1], [this.location[0] - 1, this.location[1] + 2],
             [this.location[0] + 2, this.location[1] + 1], [this.location[0] + 1, this.location[1] + 2]
         ];
-  
+
         //Check if any moves in the moveSet can be added to possibleMoves
-        moveSet.forEach(move => {
+        for (let i=0; i<moveSet.length; i++){
+            let move = moveSet[i];
             if (isInBoard(move)){
                 if (isEmptyAtLocation(move) || !this.isSameTeamAtLocation(move)){
                     possibleMoves.push(move);
                 }
             }
-            /*
-                In order to make a valid move, we must check for the followings:
-                1. The new location is empty (no chess piece is there).
-                2. The new location contains chess piece with the opposite color (to be eaten)
-                3. Our king is not checked. If our king is checked, then either our king must move
-                   or there is at least one piece of the same color that can 'block' the king to stop
-                   a check. 
-                4. The new location is not out of bounds.
-                5. If we decide to take the new move, our king should not be checked. This can happen
-                   if the current piece is already blocking a check. 
-
-                Idea to do checks:
-                1. Once a chess piece has moved, we will mark the ranges it covers as 'protected'.
-                If the range includes a piece of an opposing color, that piece will be marked 'threatened'.
-
-                Also, once a piece is decided to move to a new cell, reset the 'protected/threatened' cells/pieces
-                before moving to the new cell, in which we will have new 'protected' and 'threatened' pieces.
-
-                This will be discussed in our next meeting. 
-            */
-            
-
-        });
-
-
-       return possibleMoves;
+        }
+      
+        return possibleMoves;
     }
 }
 
@@ -240,6 +226,10 @@ class Bishop extends ChessPiece{
         
     }
     listMoves(){
+       //This will implement hypothetical moves
+       return this.possibleMoves(); //placeholder
+    }
+    possibleMoves(){
         var arr = [];
 
         // Move Diagonally Down Right
@@ -289,6 +279,10 @@ class Rook extends ChessPiece{
         super(location, color, type);
     }
     listMoves(){
+        //This will implement the hypothetical moves.
+        return this.possibleMoves();//placeholder
+    }
+    possibleMoves(){
         var arr = [];
 
         // Gets all possible Move locations and stops moving at the first chess piece (including white and black) 
@@ -337,6 +331,10 @@ class King extends ChessPiece{
     }
 
     listMoves(){
+       //Placeholder
+       return this.possibleMoves();
+    }
+    possibleMoves(){
         let possibleMoves = [];
 
         //Available Moves without any checks (for now)
@@ -362,7 +360,6 @@ class King extends ChessPiece{
 
         return possibleMoves;
     }
-
     // Returns true if any enemy piece can eat the king (the king is in the piece's path)
     isInCheck(){
         var enemyMoves = this.allPossibleEnemyMoves(); //an array containing all possible moves that can be done by the enemy
@@ -386,77 +383,81 @@ class Queen extends ChessPiece{
         super(location, color, type);
     }
     listMoves(){
-        // Contains all possible move locations
-        var arr = [];
+      //this will implement hypothetical moves
+      return this.possibleMoves();
+    }
+    possibleMoves(){
+          // Contains all possible move locations
+          var arr = [];
 
-        // Gets all possible Move locations and stops moving at the first chess piece (including white and black) 
-
-        // Move Down
-        for (let i = this.location[0] + 1; isInBoard([i, this.location[1]]); i++){
-            arr.push([i,this.location[1]]);
-            if (board[i][this.location[1]].getItem() != null)
-            break;
-        }
-
-        // Move Up
-        for (let i = this.location[0] - 1; isInBoard([i, this.location[1]]); i--){
-            arr.push([i,this.location[1]]);
-            if (board[i][this.location[1]].getItem() != null)
-            break;
-        }
-
-        // Move Right
-        for (let i = this.location[1] + 1; isInBoard([this.location[0],i]); i++){
-            arr.push([this.location[0],i]);
-            if (board[this.location[0]][i].getItem() != null)
-            break;
-        }
-        
-        // Move Left
-        for (let i = this.location[1] - 1; isInBoard([this.location[0],i]); i--){
-            arr.push([this.location[0],i]);
-            if (board[this.location[0]][i].getItem() != null)
-            break;
-        }
-
-        // Move Diagonally Down Right
-        for (let i = 1; isInBoard([this.location[0] + i,this.location[1] + i]); i++){
-            arr.push([this.location[0] + i, this.location[1] + i]);
-            if (board[this.location[0] + i][this.location[1] + i].getItem() != null){
-                break;
-            }
-        }
-
-        // Move Diagonally Down Left
-        for (let i = 1; isInBoard([this.location[0] + i,this.location[1] - i]); i++){
-            arr.push([this.location[0] + i, this.location[1] - i]);
-            if (board[this.location[0] + i][this.location[1] - i].getItem() != null){
-                break;
-            }
-        }
-
-        // Move Diagonally Up Right
-        for (let i = 1; isInBoard([this.location[0] - i,this.location[1] + i]); i++){
-            arr.push([this.location[0] - i, this.location[1] + i]);
-            if (board[this.location[0] - i][this.location[1] + i].getItem() != null){
-                break;
-            }
-        }
-
-        // Move Diagonally Up Left
-        for (let i = 1; isInBoard([this.location[0] - i,this.location[1] - i]); i++){
-            arr.push([this.location[0] - i, this.location[1] - i]);
-            if (board[this.location[0] - i][this.location[1] - i].getItem() != null){
-                break;
-            }
-        }
-
-        // Remove squares with pieces of the same color
-        for (let i = arr.length - 1; i >= 0; i--){
-            if (!isEmptyAtLocation(arr[i]) && this.isSameTeamAtLocation(arr[i])){
-                arr.splice(i,1);
-            }
-        }
-        return arr;
+          // Gets all possible Move locations and stops moving at the first chess piece (including white and black) 
+  
+          // Move Down
+          for (let i = this.location[0] + 1; isInBoard([i, this.location[1]]); i++){
+              arr.push([i,this.location[1]]);
+              if (board[i][this.location[1]].getItem() != null)
+              break;
+          }
+  
+          // Move Up
+          for (let i = this.location[0] - 1; isInBoard([i, this.location[1]]); i--){
+              arr.push([i,this.location[1]]);
+              if (board[i][this.location[1]].getItem() != null)
+              break;
+          }
+  
+          // Move Right
+          for (let i = this.location[1] + 1; isInBoard([this.location[0],i]); i++){
+              arr.push([this.location[0],i]);
+              if (board[this.location[0]][i].getItem() != null)
+              break;
+          }
+          
+          // Move Left
+          for (let i = this.location[1] - 1; isInBoard([this.location[0],i]); i--){
+              arr.push([this.location[0],i]);
+              if (board[this.location[0]][i].getItem() != null)
+              break;
+          }
+  
+          // Move Diagonally Down Right
+          for (let i = 1; isInBoard([this.location[0] + i,this.location[1] + i]); i++){
+              arr.push([this.location[0] + i, this.location[1] + i]);
+              if (board[this.location[0] + i][this.location[1] + i].getItem() != null){
+                  break;
+              }
+          }
+  
+          // Move Diagonally Down Left
+          for (let i = 1; isInBoard([this.location[0] + i,this.location[1] - i]); i++){
+              arr.push([this.location[0] + i, this.location[1] - i]);
+              if (board[this.location[0] + i][this.location[1] - i].getItem() != null){
+                  break;
+              }
+          }
+  
+          // Move Diagonally Up Right
+          for (let i = 1; isInBoard([this.location[0] - i,this.location[1] + i]); i++){
+              arr.push([this.location[0] - i, this.location[1] + i]);
+              if (board[this.location[0] - i][this.location[1] + i].getItem() != null){
+                  break;
+              }
+          }
+  
+          // Move Diagonally Up Left
+          for (let i = 1; isInBoard([this.location[0] - i,this.location[1] - i]); i++){
+              arr.push([this.location[0] - i, this.location[1] - i]);
+              if (board[this.location[0] - i][this.location[1] - i].getItem() != null){
+                  break;
+              }
+          }
+  
+          // Remove squares with pieces of the same color
+          for (let i = arr.length - 1; i >= 0; i--){
+              if (!isEmptyAtLocation(arr[i]) && this.isSameTeamAtLocation(arr[i])){
+                  arr.splice(i,1);
+              }
+          }
+          return arr;
     }
 }
