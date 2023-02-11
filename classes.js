@@ -195,20 +195,28 @@ class Pawn extends ChessPiece{
         let move = [];
         //The moves differ when the pawn is black/white, so check for that.
         move = [this.location[0] + displacement, this.location[1]];
-        if(isInBoard(move) && (isEmptyAtLocation(move) || !this.isSameTeamAtLocation(move))){
+        if(isInBoard(move) && isEmpty(move)){
             possibleMoves.push(move);
         }
             
         if (possibleMoves.length == 1 && isEmptyAtLocation(move)){
             if (this.firstMove){
                 move = [this.location[0] + (2 * displacement), this.location[1]];
-                if(isInBoard(move) && (isEmptyAtLocation(move) || !this.isSameTeamAtLocation(move))){
+                if(isInBoard(move) && isEmpty(move)){
                     possibleMoves.push(move);
                 }
-                //turn off firstMove (should be turned off after the first MOVE, not the list of moves)
-                // this.firstMove = false;
             }
         }
+
+        // eating diagonally
+        let eat1 = [this.location[0] + displacement, this.location[1] + 1];
+        let eat2 = [this.location[0] + displacement, this.location[1] - 1];
+        if(isInBoard(eat1) && (!isEmpty(eat1) && !this.isSameTeamAtLocation(eat1)))
+            possibleMoves.push(eat1);
+        if(isInBoard(eat2) && (!isEmpty(eat2) && !this.isSameTeamAtLocation(eat2)))
+            possibleMoves.push(eat2);
+
+
         //function to detect enemy and eat
         //also remember en pessant 
         //if pawn is on the other side, give option to change pawn's type
