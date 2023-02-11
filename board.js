@@ -3,6 +3,10 @@ board = null;
 focus = null;
 whiteKing = null;
 blackKing = null;
+blackPiecesAlive = [];
+whitePiecesAlive = [];
+blackPiecesDead = [];
+whitePiecesDead = [];
 
 
 //Initializes everything needed for the game.
@@ -73,24 +77,26 @@ function initializeBoard(){
                 let pieceInCell = cell.getItem();
 
                 //Cell is empty
-                if (pieceInCell === null){
-                    if (focus !== null){
-                        if (focus.containMove(cell.getLocation())){
-                            //console.log('moving piece');
-                            movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
-                            focus = null;
-                        }
+                if (focus !== null){
+                    unhighlightLocations(focus.listMoves());
+                    if (focus.containMove(cell.getLocation())){
+                        
+                        if (focus.firstMove === true)
+                            focus.firstMove = false;
+
+                        //console.log('moving piece');
+                        movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
+                        focus = null;
                     }
                 }
                 //Cell is non-empty (a piece is clicked)
                 else{
-                    if (focus === null){
+                    if (pieceInCell !== null && pieceInCell.listMoves().length > 0)
                         focus = pieceInCell;
-                    }
+                    highlightPossibleMoves(cell);
                 }
 
                 //console.log(focus);
-                highlightPossibleMoves(cell)
             };
         }
     }
@@ -100,8 +106,12 @@ function initializeBoard(){
 function movePiece(oldCell, newCell){
     //Replace the content of newCell by those of oldCell
     //Then set oldCell to an empty cell.
+    if(newCell.getItem()!==null)
+        eatAtCell(newCell);
     newCell.setItem(oldCell.getItem());
+    oldCell.setItem(null);
     newCell.getElement().appendChild(newCell.getItem().getElement());
+    newCell.getItem().setLocation(newCell.getLocation());
 }
 
 //Helper function to intialize a chess piece
@@ -136,6 +146,13 @@ function initializePiece(location, color, type){
 
     board[r][c].setItem(piece);
     board[r][c].getElement().appendChild(piece.getElement());
+
+    if (color === "white"){
+        whitePiecesAlive.push(piece);
+    }
+    else if (color === "black"){
+        blackPiecesAlive.push(piece);
+    }
 }
 
 function initializeModels(){
@@ -193,6 +210,13 @@ function highlightPossibleMoves(cell){
     }
 }
 
+function unhighlightLocations(arr){
+    arr.forEach(function(location){
+        let td = board[location[0]][location[1]].getElement();
+        td.style.backgroundColor = "";
+    });
+}
+
 // Returns true if the location is within the bounds of the board
 function isInBoard(location){
     let a = location[0];
@@ -203,7 +227,7 @@ function isInBoard(location){
     return false;
 }
 
-function isEmpty(location){
+function isEmptyAtLocation(location){
     return board[location[0]][location[1]].getItem() == null;
 }
 
@@ -212,4 +236,12 @@ function highlightArrayOfLocations(arr){
         let td = board[location[0]][location[1]].getElement();
         td.style.backgroundColor = "blue";
     });
+}
+
+// eats the piece at given cell
+// Cell is the parameter
+function eatAtCell(cell){
+    cell.getElement().removeChild(cell.getItem().getElement());
+    cell.setItem(null);
+    // add chess piece to array
 }

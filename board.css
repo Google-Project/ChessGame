@@ -3,19 +3,56 @@ body{
 }
 
 .back{
-    background-color: rgb(211, 195, 195);
+    margin-top: 50px;
+    background-color: rgb(241, 241, 241);
     width: 450px;
-    height: 700px;
+    height: 800px;
     margin-right: auto;
     margin-left: auto;
     border-radius: 20px;
 }
 
-.opponent{
+#spacing{
+    text-align: center;
     margin-top: 10px;
+    margin-bottom: 10px;
+    padding-top: 20px;
+    font-size: large;
 }
 
-.player{
+.opponent{
+    background-color: rgb(216, 213, 213);
+    width: 100%; 
+    height: 50px; 
+    margin-top: 10px; 
+    margin-bottom: 20px;
+}
+
+
+#icon{
+    background-color: black;
+    width: 40px;
+    height: 40px;
+    margin-top: 5px;
+    margin-right: 10px;
+    float: right;
+    border-radius: 25px;
+}
+
+.opponent h4{
+    float: right;
+    margin-right: 10px;
+}
+
+#aquiredPeices{
+    width: 50%;
+    height: 40px;
+    border-radius: 10px;
+    float: left;
+    background-color: rgb(255, 255, 255, .2);
+    margin-top: 5px;
+    margin-left: 10px;
+    display: flex;
 
 }
 
@@ -25,6 +62,7 @@ body{
     border-spacing: 0;
     background-color: gray;
     margin-top: 10%;
+    margin-bottom: 10%;
     border-radius: 2px;
 }
 
@@ -42,6 +80,10 @@ body{
     width: 27px;
     height: 32;
 }
+.chess-piece:hover{
+    cursor: pointer;
+    filter: drop-shadow(0px 0px 10px #7c89d1);
+}
 
 .light{
     width: 50px;
@@ -57,14 +99,53 @@ body{
     border-spacing: 0;
 }
 
+.player{
+    background-color: rgb(216, 213, 213);
+    width: 100%; 
+    height: 50px; 
+    margin-top: 20px; 
+    margin-bottom: 20px;
+}
+
+#playerIcon{
+    background-color: black;
+    width: 40px;
+    height: 40px;
+    margin-top: 5px;
+    margin-left: 10px;
+    float: left;
+    border-radius: 25px;
+}
+
+.player h4{
+    float: left;
+    margin-left: 10px;
+}
+
+#playerAquiredPeices{
+    width: 50%;
+    height: 40px;
+    border-radius: 10px;
+    float: right;
+    background-color: rgb(255, 255, 255, .2);
+    margin-top: 5px;
+    margin-right: 10px;
+    display: flex;
+
+}
+
 h1{
+    text-align: center;
+}
+
+#clock{
+    margin-top: 30px;
     text-align: center;
 }
 
 #minutes{
     text-align: center;
     font-size: 30px;
-    margin-left: 45%;
 }
 #seconds{
     text-align: center;
