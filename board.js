@@ -81,15 +81,18 @@ function initializeBoard(){
                         focus = null;
                     }
 
-                    //if location contains the same-color piece
+                    //if location contains the same-color piece 
                     else if (focus.isSameTeamAtLocation(cell.getLocation())){
-                        focus=pieceInCell;
-                        highlightPossibleMoves(cell);
+                        //if the piece is the same as focus, do not highlight cells.
+                        if (focus.getLocation()[0]===cell.getLocation()[0] && focus.getLocation()[1]===cell.getLocation()[1]){
+                            focus = null;
+                        }
+                        else{
+                            //The piece is a same-color piece as focus
+                            focus=pieceInCell;
+                            highlightPossibleMoves(cell);
+                        }
                     }
-                  
-                    // if location is not a valid move (focus's original position), reset focus
-                    else
-                        focus = null;
                 }
 
                 // if focus has not been chosen yet
