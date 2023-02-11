@@ -61,10 +61,10 @@ function initializeBoard(){
             cellElement.onclick = function(e){
                 /*
                     A click on an empty cell either means:
-                      a. No piece was clicked: nothing changes.
+                      a. No piece was clicked: focus=null
                       b. A piece was clicked (focus=[somePieceObject]) so this empty cell can:
                         1. Be a possible move for the clicked piece: focus=null, move the piece to this empty cell, etc.
-                        2. Not be a possible move for the clicked piece: nothing changes
+                        2. Not be a possible move for the clicked piece: focus=null
 
                     A click on a non-empty cell either means:
                       a. No piece was clicked: focus=[currentPieceObject]
@@ -77,34 +77,49 @@ function initializeBoard(){
                 let cell = cellElement.object;
                 let pieceInCell = cell.getItem();
 
-                //Cell is empty
-                if (focus !== null){
-                    unhighlightLocations(focus.listMoves());
-                    if (focus.containMove(cell.getLocation())){
-                        
-                        if (focus.firstMove === true)
-                            focus.firstMove = false;
-
-                        //console.log('moving piece');
-                        movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
-
-                        // switches turn to black if white and vice versa
-                        turn = turn==="white" ? "black" : "white";
-
-                        focus = null;
+                //Cell is empty and focus=[clickedPieceObject]
+                if (cell.isEmpty()){
+                    //A piece was clicked
+                    if (focus !== null){
+                        unhighlightLocations(focus.listMoves());
+                        if (focus.containMove(cell.getLocation())){
+                            if (focus.firstMove === true)
+                                focus.firstMove = false;
+    
+                            //console.log('moving piece');
+                            movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
+    
+                            // switches turn to black if white and vice versa
+                            turn = turn==="white" ? "black" : "white";
+    
+                            focus = null;
+                        }
+                        else{
+                            focus = null;
+                        }
                     }
-                    else
-                        focus = null;
                 }
-                //Cell is non-empty (a piece is clicked)
+                //Cell is non-empty 
                 else{
-                    if (pieceInCell !== null && pieceInCell.getColor()===turn && pieceInCell.listMoves().length > 0){
-                        focus = pieceInCell;
-                        highlightPossibleMoves(cell);
-                }
-                }
+                    if (pieceInCell.getColor()===turn && pieceInCell.listMoves().length > 0){
+                        if (focus === null){
+                            highlightPossibleMoves(cell);
+                            focus = pieceInCell;
+                        }
+                        else{
+                            unhighlightLocations(focus.listMoves());
 
-                //console.log(focus);
+                            let [x,y] = focus.getLocation();
+                            if (x === pieceInCell.getLocation()[0] && y === pieceInCell.getLocation()[1]){
+                                focus = null;
+                            }
+                            else{
+                                focus=pieceInCell;
+                                highlightPossibleMoves(cell);
+                            }
+                        }
+                    }
+                }
             };
         }
     }
@@ -235,10 +250,12 @@ function isInBoard(location){
     return false;
 }
 
+//Returns true if the current cell does not contain a chess piece.
 function isEmptyAtLocation(location){
     return board[location[0]][location[1]].getItem() == null;
 }
 
+//Highlights available moves that a chess piece can move to
 function highlightArrayOfLocations(arr){
     arr.forEach(function(location){
         let td = board[location[0]][location[1]].getElement();
