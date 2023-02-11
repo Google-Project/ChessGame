@@ -7,6 +7,7 @@ blackPiecesAlive = [];
 whitePiecesAlive = [];
 blackPiecesDead = [];
 whitePiecesDead = [];
+turn = "white";
 
 
 //Initializes everything needed for the game.
@@ -86,6 +87,10 @@ function initializeBoard(){
 
                         //console.log('moving piece');
                         movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
+
+                        // switches turn to black if white and vice versa
+                        turn = turn==="white" ? "black" : "white";
+
                         focus = null;
                     }
                     else
@@ -93,9 +98,10 @@ function initializeBoard(){
                 }
                 //Cell is non-empty (a piece is clicked)
                 else{
-                    if (pieceInCell !== null && pieceInCell.listMoves().length > 0)
+                    if (pieceInCell !== null && pieceInCell.getColor()===turn && pieceInCell.listMoves().length > 0){
                         focus = pieceInCell;
-                    highlightPossibleMoves(cell);
+                        highlightPossibleMoves(cell);
+                }
                 }
 
                 //console.log(focus);
