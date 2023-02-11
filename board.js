@@ -243,7 +243,27 @@ function highlightArrayOfLocations(arr){
 // eats the piece at given cell
 // Cell is the parameter
 function eatAtCell(cell){
-    cell.getElement().removeChild(cell.getItem().getElement());
+    let piece = cell.getItem();
+    piece.setLocation(null);
+
+    // sets deadpile to the whitepiecedead if piece is white, and vice versa
+    let deadpile = piece.getColor() === "white" ? whitePiecesDead : blackPiecesDead;
+    let alivepile = piece.getColor() === "white" ? whitePiecesAlive : blackPiecesAlive;
+    deadpile.push(piece);
+    removeObjectFromArray(alivepile, piece);
+    
+    cell.getElement().removeChild(piece.getElement());
     cell.setItem(null);
-    // add chess piece to array
+    
+    let deadpiledisplay = piece.getColor() === "white" ? "acquiredPieces" : "playerAcquiredPieces";
+    document.getElementById(deadpiledisplay).appendChild(piece.getElement());
+}
+
+function removeObjectFromArray(arr, obj){
+    for (let i = 0; i < arr.length; i++){
+        if (arr[i]===obj){
+            arr.splice(i,1);
+            return;
+        }
+    }
 }
