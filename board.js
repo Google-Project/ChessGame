@@ -59,21 +59,6 @@ function initializeBoard(){
 
             // onclick for cell object to Highlight cells where chess pieces at the cell can possibly move
             cellElement.onclick = function(e){
-                /*
-                    A click on an empty cell either means:
-                      a. No piece was clicked: nothing changes.
-                      b. A piece was clicked (focus=[somePieceObject]) so this empty cell can:
-                        1. Be a possible move for the clicked piece: focus=null, move the piece to this empty cell, etc.
-                        2. Not be a possible move for the clicked piece: nothing changes
-
-                    A click on a non-empty cell either means:
-                      a. No piece was clicked: focus=[currentPieceObject]
-                      b. A piece was clicked (focus=[clickedPieceObject]) and the current cell contains:
-                         1. the same-color piece as focus: focus=[currentPieceObject]
-                         2. a different-color piece as focus:
-                            a. the different-color piece can be eaten: eat the different-color piece, set focus=null, etc.
-                            b. the different-color piece cannot be eaten: nothing changes.
-                */
                 let cell = cellElement.object;
                 let pieceInCell = cell.getItem();
 
@@ -81,7 +66,7 @@ function initializeBoard(){
                 if (focus !== null){
                     unhighlightLocations(focus.listMoves());
 
-                    // if the location is a valid move
+                    // if the location is a valid move (empty cell or enemy piece)
                     if (focus.containMove(cell.getLocation())){
                         
                         // this is specifically for the pawn (MUST BE CHANGED FOR CASTLING)
@@ -96,22 +81,25 @@ function initializeBoard(){
                         focus = null;
                     }
 
-                    // if location is not a valid move (includes focus's original position), reset focus
+                    //if location contains the same-color piece
+                    else if (focus.isSameTeamAtLocation(cell.getLocation())){
+                        focus=pieceInCell;
+                        highlightPossibleMoves(cell);
+                    }
+                  
+                    // if location is not a valid move (focus's original position), reset focus
                     else
                         focus = null;
                 }
 
                 // if focus has not been chosen yet
                 else{
-
                     // checks if there is a piece, it is of the correct color, and if it can even move in the first place
                     if (pieceInCell !== null && pieceInCell.getColor()===turn && pieceInCell.listMoves().length > 0){
-                        focus = pieceInCell;
                         highlightPossibleMoves(cell);
+                        focus = pieceInCell;
+                    }
                 }
-                }
-
-                //console.log(focus);
             };
         }
     }
@@ -121,7 +109,6 @@ function initializeBoard(){
 //Replace the content of newCell by those of oldCell
 //Then set oldCell to an empty cell.
 function movePiece(oldCell, newCell){
-
     // Eats chess piece and removes any traces of piece in new cell
     if(newCell.getItem()!==null)
         eatAtCell(newCell);
@@ -256,7 +243,7 @@ function isEmptyAtLocation(location){
     return board[location[0]][location[1]].getItem() == null;
 }
 
-// highlights cells given an array of their locations
+//Highlights available moves that a chess piece can move to
 function highlightArrayOfLocations(arr){
     arr.forEach(function(location){
         let td = board[location[0]][location[1]].getElement();
