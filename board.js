@@ -88,6 +88,8 @@ function initializeBoard(){
                         movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
                         focus = null;
                     }
+                    else
+                        focus = null;
                 }
                 //Cell is non-empty (a piece is clicked)
                 else{
