@@ -125,6 +125,17 @@ function movePiece(oldCell, newCell){
 
     // sets new location for chess piece
     newCell.getItem().setLocation(newCell.getLocation());
+
+    //Checks if the enemy king can be checked
+    if (turn==='white'){
+        if (blackKing.isInCheck()){
+            //Placeholder
+        }
+    }else{
+        if (whiteKing.isInCheck()){
+            //Placeholder
+        }
+    }
 }
 
 //Helper function to intialize a chess piece
@@ -167,6 +178,7 @@ function initializePiece(location, color, type){
         blackPiecesAlive.push(piece);
     }
 }
+
 
 function initializeModels(){
     //Pawns
