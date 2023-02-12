@@ -371,8 +371,14 @@ function selected(type, color, cell){
         console.log(cell.getItem().getType());
         blackPiecesAlive.push(cell.getItem());
     }
+
     //after onclick, remove pawn promotion box 
     const ChoiceDisplay = document.getElementById("ChoiceDisplay");
     ChoiceDisplay.style.display = "none";
 
+    //remove buttons
+    const promotionSelection = document.getElementById("promotionSelection");
+    while (promotionSelection.firstChild){
+        promotionSelection.removeChild(promotionSelection.firstChild);
+    }
 }
