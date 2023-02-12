@@ -67,7 +67,9 @@ class ChessPiece{
      /*
                 Can either be enemy piece or empty cell:
                 In both cases, we can assume that the new cell "doesn't" contain a piece (if it does we will restore that piece later) 
-                and allow the current piece to "move" to the new cell. 
+                and allow the current piece to "move" to the new cell. Note that if the new cell does contain a piece (which can be eaten hypothetically),
+                that piece will have isAlive=false to avoid conflicts when generating opponent pieces' possibleMoves. Its original state, as mentioned, will be
+                restored later.
 
                 The piece in its original cell will "move" to the new cell, then we can do check/checkmate tests 
                 based on the hypothetical conditions. If our king is not checked, add this move as an available move, otherwise no.
@@ -105,7 +107,10 @@ class ChessPiece{
         newCell.setItem(pieceAtOldCell); //We assume the new cell doesn't have a piece 
         pieceAtOldCell.setLocation([x2,y2]); //to be consistent with the location of the current piece
         oldCell.setItem(null); //The old cell becomes empty after the hypothetical move
-        
+        if (pieceAtNewCell !== null){
+            pieceAtNewCell.setIsAlive(false);
+        }
+
         //Stage 2
         if (turn === 'white'){
             if (!whiteKing.isInCheck()){
@@ -113,6 +118,7 @@ class ChessPiece{
             }
         }
         else{
+            console.log('is black king in check?' + blackKing.isInCheck());
             if (!blackKing.isInCheck()){
                 canAddMove = true;
             }
@@ -124,6 +130,9 @@ class ChessPiece{
         oldCell.setItem(pieceAtOldCell);
         pieceAtOldCell.setLocation([x,y]);
         newCell.setItem(pieceAtNewCell);
+        if (pieceAtNewCell !== null){
+            pieceAtNewCell.setIsAlive(true);
+        }
         return canAddMove;
     }
 
@@ -185,21 +194,23 @@ class ChessPiece{
     // returns all possible moves that the enemy can take
     // Output: An object accessable by object[x][y] ([x][y] is a location), containing unique moves only
     allPossibleEnemyMoves(){
-        console.log('enemy color = ' + (turn==='white')?'black':'white');
         var output = {};
         var enemypieces = this.getColor() === "white" ? blackPiecesAlive : whitePiecesAlive;
         enemypieces.forEach(function(piece){
-            piece.possibleMoves().forEach(function(move){
-                let [x,y] = move;
-                //If the current x is not defined
-                if (!output[x]){
-                    output[x] = {};
-                }
-                //If the current y is not defined
-                if (!output[x][y]){
-                    output[x][y] = true;
-                }
-            });
+            //Checks if a piece is alive (used in Hypothetical Moves)
+            if (piece.getIsAlive()){
+                piece.possibleMoves().forEach(function(move){
+                    let [x,y] = move;
+                    //If the current x is not defined
+                    if (!output[x]){
+                        output[x] = {};
+                    }
+                    //If the current y is not defined
+                    if (!output[x][y]){
+                        output[x][y] = true;
+                    }
+                });
+            }
         });
 
         //console.log(output);
