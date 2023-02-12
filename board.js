@@ -291,58 +291,60 @@ function removeObjectFromArray(arr, obj){
 }
 
 function displayPawnPromoSelection(cell){
+    //pawn selection container is displayed
+    const ChoiceDisplay = document.getElementById("ChoiceDisplay");
+    ChoiceDisplay.style.display = "block";
+
     //get div element from html file
     const promotionSelection = document.getElementById("promotionSelection");
 
     //adding images w/ on click function
     let color = cell.getItem().getColor();
-    //queen onclick
-    console.log(color);
+    //console.log(color);
+     //create buttons if white pawn reaches end
+    if (color === "white"){
+        var queenButton = document.createElement('img');
+        queenButton.src="chess_models/chess_pieces/white-queen.png";
+        queenButton.addEventListener('click', function(){selected("queen", color, cell)});
 
-    //============================================================
-    //doesnt work: Uncaught SyntaxError: expected expression, got '}' board.html:2
-    const queenButton = document.createElement("div");
-    queenButton.innerHTML = `
-        <img src="chess_models/chess_pieces/${color}-queen.png" onclick="selected("queen", color, cell)">
-    `
+        var rookButton = document.createElement('img');
+        rookButton.src = "chess_models/chess_pieces/white-rook.png";
+        rookButton.addEventListener('click', function(){selected("rook", color, cell)})
+        
+        var bishopButton = document.createElement('img');
+        bishopButton.src = "chess_models/chess_pieces/white-bishop.png";
+        bishopButton.addEventListener('click', function(){selected("bishop", color, cell)})
 
-    //=============================================================
+        var knightButton = document.createElement('img');
+        knightButton.src = "chess_models/chess_pieces/white-knight.png";
+        knightButton.addEventListener('click', function(){selected("knight", color, cell)})
+    } //create buttons when black pawn reaches the end
+    else {
+        var queenButton = document.createElement('img');
+        queenButton.src="chess_models/chess_pieces/black-queen.png";
+        queenButton.addEventListener('click', function(){selected("queen", color, cell)});
 
-    //works but issue is, it automatically turns the pawn, no choice
-    // if (color === "white"){
+        var rookButton = document.createElement('img');
+        rookButton.src = "chess_models/chess_pieces/black-rook.png";
+        rookButton.addEventListener('click', function(){selected("rook", color, cell)})
+        
+        var bishopButton = document.createElement('img');
+        bishopButton.src = "chess_models/chess_pieces/black-bishop.png";
+        bishopButton.addEventListener('click', function(){selected("bishop", color, cell)})
 
-    //     var queenButton = document.createElement('img');
-    //     queenButton.src="chess_models/chess_pieces/white-queen.png";
-    //     queenButton.addEventListener('click', selected("queen", color, cell));
-
-    //     var rookButton = document.createElement('img');
-    //     rookButton.src = "chess_models/chess_pieces/white-rook.png";
-    //     rookButton.addEventListener('click', selected("rook", color, cell))
-    // }
-    // else {
-
-    // }
-    //===============================================================
-    //also automatic
-    //  if (color === "white"){
-
-    //     var queenButton = document.createElement('img');
-    //     queenButton.src="chess_models/chess_pieces/white-queen.png";
-    //     queenButton.onclick = selected("queen", color, cell);
-
-    //     var rookButton = document.createElement('img');
-    //     rookButton.src = "chess_models/chess_pieces/white-rook.png";
-    //     rookButton.onclick = selected("rook", color, cell);
-    // }
-    // else {
-
-    // }
-
+        var knightButton = document.createElement('img');
+        knightButton.src = "chess_models/chess_pieces/black-knight.png";
+        knightButton.addEventListener('click', function(){selected("knight", color, cell)})
+    }
     promotionSelection.appendChild(queenButton);
-    //promotionSelection.appendChild(rookButton);
+    promotionSelection.appendChild(rookButton);
+    promotionSelection.appendChild(bishopButton);
+    promotionSelection.appendChild(knightButton);
 }
 
+
 function selected(type, color, cell){
+
     //remove from alivePile from corresponding colors
     if (color === "white"){
         removeObjectFromArray(whitePiecesAlive, cell.getItem());
@@ -365,7 +367,12 @@ function selected(type, color, cell){
         console.log(cell.getItem().getType());
         whitePiecesAlive.push(cell.getItem());
     }
-
-
+    else{
+        console.log(cell.getItem().getType());
+        blackPiecesAlive.push(cell.getItem());
+    }
     //after onclick, remove pawn promotion box 
+    const ChoiceDisplay = document.getElementById("ChoiceDisplay");
+    ChoiceDisplay.style.display = "none";
+
 }
