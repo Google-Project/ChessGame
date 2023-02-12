@@ -122,25 +122,22 @@ function movePiece(oldCell, newCell){
     // sets new location for chess piece
     newCell.getItem().setLocation(newCell.getLocation());
 
-    //Checks if the enemy king can be checked
+    //Checks if the enemy king can be checkmated (including the check)
     //Also switches turn.
     if (turn==='white'){
         turn = 'black';
-        if (blackKing.isInCheck()){
-            //Checks for checkmate on the enemy king
-            if (blackKing.isCheckmated()){
-                console.log("Black King is Checkmated");
-            }
+        //Checks for checkmate on the enemy king
+        //console.log() can be removed after things are finalized
+        if (blackKing.isCheckmated()){
+            console.log("Black King is Checkmated");
         }
         else if (blackKing.isStaleMated()){
             console.log("Stalemate Reached after White has moved");
         }
     }else{
         turn = 'white';
-        if (whiteKing.isInCheck()){
-            if (whiteKing.isCheckmated()){
-                console.log("White King is Checkmated");
-            }
+        if (whiteKing.isCheckmated()){
+            console.log("White King is Checkmated");
         }
         else if (whiteKing.isStaleMated()){
             console.log("Stalemate Reached after Black has moved");

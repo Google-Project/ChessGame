@@ -196,8 +196,6 @@ class ChessPiece{
         var hasAvailableMoves = false;
         for (let i=0; i<piecesAlive.length; i++){
             let piece = piecesAlive[i];
-
-            console.log(piece.listMoves());
             if (piece.listMoves().length > 0){
                 hasAvailableMoves = true;
                 break;
@@ -532,7 +530,7 @@ class King extends ChessPiece{
 
     //Check if enemy king is checkmated after a player has moved a piece and switched turn.
     isCheckmated(){
-        if (!super.sameColorPiecesCanMove()){
+        if (this.isInCheck() && !super.sameColorPiecesCanMove()){
             return true;
         }
         else{
@@ -543,7 +541,7 @@ class King extends ChessPiece{
     //Checks if the king is stalemated (don't have any legal moves but the king itself is not checked) 
     isStaleMated(){
         //If the current player cannot move at least one piece and the same-color king is not checked, then it is a stalemate
-        if (!super.sameColorPiecesCanMove() && !this.isInCheck()){
+        if (!this.isInCheck() && !super.sameColorPiecesCanMove()){
             return true;
         }
         else{
