@@ -74,10 +74,6 @@ function initializeBoard(){
                             focus.firstMove = false;
 
                         movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
-
-                        // switches turn to black if white and vice versa
-                        turn = turn==="white" ? "black" : "white";
-
                         focus = null;
                     }
 
@@ -127,13 +123,27 @@ function movePiece(oldCell, newCell){
     newCell.getItem().setLocation(newCell.getLocation());
 
     //Checks if the enemy king can be checked
+    //Also switches turn.
     if (turn==='white'){
+        turn = 'black';
         if (blackKing.isInCheck()){
-            //Placeholder
+            //Checks for checkmate on the enemy king
+            if (blackKing.isCheckmated()){
+                console.log("Black King is Checkmated");
+            }
+        }
+        else if (blackKing.isStaleMated()){
+            console.log("Stalemate Reached after White has moved");
         }
     }else{
+        turn = 'white';
         if (whiteKing.isInCheck()){
-            //Placeholder
+            if (whiteKing.isCheckmated()){
+                console.log("White King is Checkmated");
+            }
+        }
+        else if (whiteKing.isStaleMated()){
+            console.log("Stalemate Reached after Black has moved");
         }
     }
 }

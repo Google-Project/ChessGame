@@ -118,7 +118,6 @@ class ChessPiece{
             }
         }
         else{
-            console.log('is black king in check?' + blackKing.isInCheck());
             if (!blackKing.isInCheck()){
                 canAddMove = true;
             }
@@ -173,7 +172,7 @@ class ChessPiece{
         if (square.getItem() == null){
             // throw exception
         }
-        if (square.getItem().getColor()==this.color){
+        else if (square.getItem().getColor()==this.color){
             return true;
         }
         return false;
@@ -190,7 +189,24 @@ class ChessPiece{
         return true;
     }
 
+    //This is used to check for checkmate/stalemate after a player moves a piece and then it's the other player's turn.
+    //returns true if at least one same-color piece can move, otherwise false (checkmate/stalemate)
+    sameColorPiecesCanMove(){
+        var piecesAlive = turn === 'white' ? whitePiecesAlive : blackPiecesAlive;
+        var hasAvailableMoves = false;
+        for (let i=0; i<piecesAlive.length; i++){
+            let piece = piecesAlive[i];
 
+            console.log(piece.listMoves());
+            if (piece.listMoves().length > 0){
+                hasAvailableMoves = true;
+                break;
+            }
+        }
+        return hasAvailableMoves;
+    }
+
+    //This is used when a player clicks on a piece and wants to move it. 
     // returns all possible moves that the enemy can take
     // Output: An object accessable by object[x][y] ([x][y] is a location), containing unique moves only
     allPossibleEnemyMoves(){
@@ -458,7 +474,6 @@ class Rook extends ChessPiece{
 class King extends ChessPiece{
     constructor(location, color, type){
         super(location, color, type);
-        this.isChecked = false;
     }
 
     listMoves(){
@@ -508,17 +523,32 @@ class King extends ChessPiece{
         var [x,y] = this.getLocation();
         //If an enemy move does not match perfectly the location of the king, then it is not checked
         if (!enemyMoves[x] || !enemyMoves[x][y]){
-            this.isChecked = false;
+            return false;
         }
         else{
-            this.isChecked = true;
+            return true;
         }
-        return this.isChecked;
     }
 
-    //Getter Method to check if king is checked without recomputing eneny moves.
-    isChecked(){
-        return this.isChecked;
+    //Check if enemy king is checkmated after a player has moved a piece and switched turn.
+    isCheckmated(){
+        if (!super.sameColorPiecesCanMove()){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    //Checks if the king is stalemated (don't have any legal moves but the king itself is not checked) 
+    isStaleMated(){
+        //If the current player cannot move at least one piece and the same-color king is not checked, then it is a stalemate
+        if (!super.sameColorPiecesCanMove() && !this.isInCheck()){
+            return true;
+        }
+        else{
+            return false;
+        }
     }
 }
 
