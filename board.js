@@ -74,10 +74,6 @@ function initializeBoard(){
                             focus.firstMove = false;
 
                         movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
-
-                        // switches turn to black if white and vice versa
-                        turn = turn==="white" ? "black" : "white";
-
                         focus = null;
                     }
 
@@ -129,6 +125,29 @@ function movePiece(oldCell, newCell){
     if(newCell.getItem().getType() == 'pawn' && (newCell.getLocation()[0] == 0 ||  newCell.getLocation()[0] == 7)){
         displayPawnPromoSelection(newCell);
         //create a variable that freezes the game so opponents cant move
+
+    }
+    
+    //Checks if the enemy king can be checkmated (including the check)
+    //Also switches turn.
+    if (turn==='white'){
+        turn = 'black';
+        //Checks for checkmate on the enemy king
+        //console.log() can be removed after things are finalized
+        if (blackKing.isCheckmated()){
+            console.log("Black King is Checkmated");
+        }
+        else if (blackKing.isStaleMated()){
+            console.log("Stalemate Reached after White has moved");
+        }
+    }else{
+        turn = 'white';
+        if (whiteKing.isCheckmated()){
+            console.log("White King is Checkmated");
+        }
+        else if (whiteKing.isStaleMated()){
+            console.log("Stalemate Reached after Black has moved");
+        }
     }
 }
 
@@ -172,6 +191,7 @@ function initializePiece(location, color, type){
         blackPiecesAlive.push(piece);
     }
 }
+
 
 function initializeModels(){
     //Pawns
