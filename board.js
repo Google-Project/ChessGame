@@ -125,6 +125,11 @@ function movePiece(oldCell, newCell){
 
     // sets new location for chess piece
     newCell.getItem().setLocation(newCell.getLocation());
+
+    if(newCell.getItem().getType() == 'pawn' && (newCell.getLocation()[0] == 0 ||  newCell.getLocation()[0] == 7)){
+        displayPawnPromoSelection(newCell);
+        //create a variable that freezes the game so opponents cant move
+    }
 }
 
 //Helper function to intialize a chess piece
@@ -283,4 +288,49 @@ function removeObjectFromArray(arr, obj){
             return;
         }
     }
+}
+
+function displayPawnPromoSelection(cell){
+    //get div element from html file
+    const choiceCont = document.getElementById("choiceCont");
+    
+    //adding words to container
+    const pawnPromoCont = document.createElement("div")
+    pawnPromoCont.innerHTML = `Pawn Promotion`
+
+    //adding images w/ on click function
+    let color = cell.getItem().getColor();
+    //queen onclick
+    console.log(color);
+    if (color === "white"){
+        var queenButton = document.createElement('img');
+        queenButton.src="chess_models/chess_pieces/white-queen.png"
+        queenButton.addEventListener('click', selected("queen", color, cell));
+    }
+    else {
+
+    }
+
+    choiceCont.appendChild(pawnPromoCont);
+    choiceCont.appendChild(queenButton);
+}
+
+function selected(type, color, cell){
+    //remove from alivePile from corresponding colors
+    if (color === "white"){
+        removeObjectFromArray(whitePiecesAlive, cell.getItem());
+    }
+    else{
+        removeObjectFromArray(blackPiecesAlive,cell.getItem());
+    }
+    
+    //set pawn's location to null
+    cell.getItem().setLocation(null);
+    //remove pawn from board
+    cell.getElement().removeChild(cell.getItem().getElement());
+    //set cell to empty
+    cell.setItem(null);
+
+    //add "selected new piece" to replace pawn
+    initializePiece(cell.getLocation(), color, type);
 }
