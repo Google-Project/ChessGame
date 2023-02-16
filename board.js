@@ -321,41 +321,31 @@ function displayPawnPromoSelection(cell){
     //adding images w/ on click function
     let color = cell.getItem().getColor();
     //console.log(color);
-     //create buttons if white pawn reaches end
-    if (color === "white"){
-        var queenButton = document.createElement('img');
-        queenButton.src="chess_models/chess_pieces/white-queen.png";
-        queenButton.addEventListener('click', function(){selected("queen", color, cell)});
 
-        var rookButton = document.createElement('img');
-        rookButton.src = "chess_models/chess_pieces/white-rook.png";
-        rookButton.addEventListener('click', function(){selected("rook", color, cell)})
+    /*
+        I optimized the functions a little, also looks good so far.
+        Please also add a "freeze" when a player is still choosing a 
+        selection (knight, bishop, rook, queen) for pawn promotion.
         
-        var bishopButton = document.createElement('img');
-        bishopButton.src = "chess_models/chess_pieces/white-bishop.png";
-        bishopButton.addEventListener('click', function(){selected("bishop", color, cell)})
+        Currently, when the pawn promotion display shows up, I can still
+        move pieces around without having to select a choice for the promotion.
+    */
+    var queenButton = document.createElement('img');
+    queenButton.src=`chess_models/chess_pieces/${color}-queen.png`;
+    queenButton.addEventListener('click', function(){selected("queen", color, cell)});
 
-        var knightButton = document.createElement('img');
-        knightButton.src = "chess_models/chess_pieces/white-knight.png";
-        knightButton.addEventListener('click', function(){selected("knight", color, cell)})
-    } //create buttons when black pawn reaches the end
-    else {
-        var queenButton = document.createElement('img');
-        queenButton.src="chess_models/chess_pieces/black-queen.png";
-        queenButton.addEventListener('click', function(){selected("queen", color, cell)});
-
-        var rookButton = document.createElement('img');
-        rookButton.src = "chess_models/chess_pieces/black-rook.png";
-        rookButton.addEventListener('click', function(){selected("rook", color, cell)})
+    var rookButton = document.createElement('img');
+    rookButton.src = `chess_models/chess_pieces/${color}-rook.png`;
+    rookButton.addEventListener('click', function(){selected("rook", color, cell)})
         
-        var bishopButton = document.createElement('img');
-        bishopButton.src = "chess_models/chess_pieces/black-bishop.png";
-        bishopButton.addEventListener('click', function(){selected("bishop", color, cell)})
+    var bishopButton = document.createElement('img');
+    bishopButton.src = `chess_models/chess_pieces/${color}-bishop.png`;
+    bishopButton.addEventListener('click', function(){selected("bishop", color, cell)})
 
-        var knightButton = document.createElement('img');
-        knightButton.src = "chess_models/chess_pieces/black-knight.png";
-        knightButton.addEventListener('click', function(){selected("knight", color, cell)})
-    }
+    var knightButton = document.createElement('img');
+    knightButton.src = `chess_models/chess_pieces/${color}-knight.png`;
+    knightButton.addEventListener('click', function(){selected("knight", color, cell)})
+    
     promotionSelection.appendChild(queenButton);
     promotionSelection.appendChild(rookButton);
     promotionSelection.appendChild(bishopButton);
@@ -381,16 +371,8 @@ function selected(type, color, cell){
     cell.setItem(null);
 
     //add "selected new piece" to replace pawn
+    //Note that this method will also add the piece to white/blackPiecesAlive array.
     initializePiece(cell.getLocation(), color, type);
-    //add new piece to the alive pile
-    if (color ==="white"){
-        console.log(cell.getItem().getType());
-        whitePiecesAlive.push(cell.getItem());
-    }
-    else{
-        console.log(cell.getItem().getType());
-        blackPiecesAlive.push(cell.getItem());
-    }
 
     //after onclick, remove pawn promotion box 
     const ChoiceDisplay = document.getElementById("ChoiceDisplay");
