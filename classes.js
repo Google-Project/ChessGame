@@ -463,7 +463,7 @@ class Bishop extends ChessPiece{
 class Rook extends ChessPiece{
     constructor(location, color, type){
         super(location, color, type);
-        this.hasMoved = false; //For Castling
+        this.firstMove = true; //For Castling
     }
     listMoves(){
         var availableMoves = [];
@@ -525,7 +525,7 @@ class Rook extends ChessPiece{
 class King extends ChessPiece{
     constructor(location, color, type){
         super(location, color, type);
-        this.hasMoved = false //For Castling
+        this.firstMove = true; //For Castling
     }
 
     listMoves(){
@@ -577,7 +577,7 @@ class King extends ChessPiece{
         */
             var thisPiece = turn === 'white' ? whiteKing : blackKing;
             //If the king has not moved
-            if (!thisPiece.hasMoved){
+            if (thisPiece.firstMove){
                 var [x, y] = this.getLocation();
                 var displacement = 1;
                 //Check if king can move to right side for castling
@@ -592,7 +592,7 @@ class King extends ChessPiece{
                         let pieceAtNewCell = board[x2][y2].getItem();
                         //If right rook exists, in the same team as king, and hasn't moved, then we have a castling move 
                         //(we already checked the cells in between the king and the rook in the 'else' statement below)
-                        if (this.isSameTeamAtLocation([x2, y2]) && pieceAtNewCell.getType() === 'rook' && !pieceAtNewCell.hasMoved){
+                        if (this.isSameTeamAtLocation([x2, y2]) && pieceAtNewCell.getType() === 'rook' && pieceAtNewCell.firstMove){
                             possibleMoves.push([x2, y2-1]);
                         }
                     }
@@ -618,7 +618,7 @@ class King extends ChessPiece{
                         let pieceAtNewCell = board[x2][y2].getItem();;
                         //If left rook exists, in the same team as king, and hasn't moved, then we have a castling move 
                         //(we already checked the cells in between the king and the rook in the 'else' statement below)
-                        if (this.isSameTeamAtLocation([x2, y2]) && pieceAtNewCell.getType() === 'rook' && !pieceAtNewCell.hasMoved){
+                        if (this.isSameTeamAtLocation([x2, y2]) && pieceAtNewCell.getType() === 'rook' && pieceAtNewCell.firstMove){
                             possibleMoves.push([x2, y2+2]);
                         }
                     }

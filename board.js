@@ -134,8 +134,12 @@ function endTurn(){
 //Replace the content of newCell by those of oldCell
 //Then set oldCell to an empty cell.
 function movePiece(oldCell, newCell){
-    //First move or enpassant for pawn
     var piece = oldCell.getItem();
+    var type = piece.getType();
+    //Disable first move for pawn/rook/king
+    if (type === 'pawn' || type === 'rook' || type === 'king'){
+        piece.firstMove = false;
+    }
 
     //If enPassant is detected, it will eat the enemy piece, and move the pawn to the new cell
     if (captureByEnPassant(oldCell, newCell, piece)){}
@@ -181,7 +185,6 @@ function performCastling(oldCell, newCell, piece){
         //If castling is detected, it will be performed in the performCastling function below
         var rightCastle = false;
         var leftCastle = false;
-        if (piece.hasMoved === false) piece.hasMoved = true; //For castling purposes
     
         //Check for castling
         if (piece.getType() === 'king'){
