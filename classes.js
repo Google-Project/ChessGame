@@ -606,7 +606,7 @@ class King extends ChessPiece{
                 //reset displacement
                 displacement = 1;
 
-                //Check if king can move to left side for castling
+                //Check if king can move to left side for castling. 
                 for (displacement; displacement<=4; displacement++){
                     let [x2, y2] = [x, y-displacement];
 
@@ -619,8 +619,13 @@ class King extends ChessPiece{
                         //If left rook exists, in the same team as king, and hasn't moved, then we have a castling move 
                         //(we already checked the cells in between the king and the rook in the 'else' statement below)
                         if (this.isSameTeamAtLocation([x2, y2]) && pieceAtNewCell.getType() === 'rook' && !pieceAtNewCell.hasMoved){
-                            possibleMoves.push([x2, y2+1]);
+                            possibleMoves.push([x2, y2+2]);
                         }
+                    }
+                    //The cell next to the rook just need to be empty, no hypothetical checks needed because 
+                    //after castling, the king won't land on or pass that cell.
+                    else if (displacement === 3){
+                        if (!isEmptyAtLocation([x2, y2])) break;
                     }
                     //Check for empty cells in between
                     else{
