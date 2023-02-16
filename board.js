@@ -70,6 +70,7 @@ function initializeBoard(){
                     // if the location is a valid move (empty cell or enemy piece)
                     if (focus.containMove(cell.getLocation())){
                         movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
+                        endTurn();
                         focus = null;
                     }
 
@@ -105,60 +106,7 @@ function initializeBoard(){
     }
 }
 
-//Moves a piece from old cell to new cell.
-//Replace the content of newCell by those of oldCell
-//Then set oldCell to an empty cell.
-function movePiece(oldCell, newCell){
-    //First move or enpassant for pawn
-    var piece = oldCell.getItem();
-    if (piece.getType() === 'pawn'){
-        if (piece.firstMove === true){
-            piece.firstMove = false;
-        }
-        if (Math.abs(newCell.getLocation()[0] - oldCell.getLocation()[0]) === 2){
-            piece.displacementOfTwo = true;
-        }
-        //En Passant Capture
-        /*
-            The new cell is empty either means the pawn is moving forward or doing en passant.
-            If it is moving forward, there will never be a piece at the previous row after the pawn has moved.
-            If it is enpassant, there will be a piece at the previous row. To be consistent, we will still do the checks.
-        */
-        if (isEmptyAtLocation(newCell.getLocation())){
-            let displacement = turn === 'white' ? 1 : -1;
-            let captureLocation = [newCell.getLocation()[0] + displacement, newCell.getLocation()[1]];
-            let captureCell = board[captureLocation[0]][captureLocation[1]];
-            if (isInBoard(captureLocation) && !isEmptyAtLocation(captureLocation) && !piece.isSameTeamAtLocation(captureLocation) && captureCell.getItem().getType() === 'pawn'){
-                eatAtCell(captureCell);
-            }
-        }
-    }
-
-    // Eats chess piece and removes any traces of piece in new cell
-    if(newCell.getItem()!==null)
-        eatAtCell(newCell);
-    
-    // set cells to their appropriate items
-    newCell.setItem(oldCell.getItem());
-    oldCell.setItem(null);
-
-    // adds chess piece display
-    newCell.getElement().appendChild(newCell.getItem().getElement());
-
-    // sets new location for chess piece
-    newCell.getItem().setLocation(newCell.getLocation());
-
-    //In case there was a possible en passant capture and the player didnt choose it, we need to set the 
-    //displaceMentOfTwo boolean to false.
-    removePreviousEnpassant();
-
-    if(newCell.getItem().getType() == 'pawn' && (newCell.getLocation()[0] == 0 ||  newCell.getLocation()[0] == 7)){
-        displayPawnPromoSelection(newCell);
-        //create a variable that freezes the game so opponents cant move
-
-    }
-    
-
+function endTurn(){
     //Checks if the enemy king can be checkmated (including the check)
     //Also switches turn.
     if (turn==='white'){
@@ -182,6 +130,128 @@ function movePiece(oldCell, newCell){
     }
 }
 
+
+//Replace the content of newCell by those of oldCell
+//Then set oldCell to an empty cell.
+function movePiece(oldCell, newCell){
+    var piece = oldCell.getItem();
+    var type = piece.getType();
+    //Disable first move for pawn/rook/king
+    if (type === 'pawn' || type === 'rook' || type === 'king'){
+        piece.firstMove = false;
+    }
+
+    //If enPassant is detected, it will eat the enemy piece, and move the pawn to the new cell
+    if (captureByEnPassant(oldCell, newCell, piece)){}
+    //If castling is detected, it will first shift the king to the new cell, then shift the rook to the new cell
+    else if (performCastling(oldCell, newCell, piece)){}
+    //Normal Moves
+    else{
+        move(oldCell, newCell);
+    }
+ 
+    //In case there was a possible en passant capture and the player didnt choose it, we need to set the 
+    //displaceMentOfTwo boolean to false.
+    removePreviousEnpassant();
+
+    if(newCell.getItem().getType() == 'pawn' && (newCell.getLocation()[0] == 0 ||  newCell.getLocation()[0] == 7)){
+        displayPawnPromoSelection(newCell);
+        //create a variable that freezes the game so opponents cant move
+    }
+}
+
+//Moves a piece to another cell
+function move(oldCell, newCell){
+    // Eats chess piece and removes any traces of piece in new cell
+    if(newCell.getItem()!==null){
+        eatAtCell(newCell);
+    }
+    // set cells to their appropriate items
+    newCell.setItem(oldCell.getItem());
+    oldCell.setItem(null);
+
+    // adds chess piece display
+    newCell.getElement().appendChild(newCell.getItem().getElement());
+
+    // sets new location for chess piece
+    newCell.getItem().setLocation(newCell.getLocation());
+}
+
+/*
+    Perform castling, if any.
+    Returns true if castling is performed, otherwise false.
+*/
+function performCastling(oldCell, newCell, piece){
+        //If castling is detected, it will be performed in the performCastling function below
+        var rightCastle = false;
+        var leftCastle = false;
+    
+        //Check for castling
+        if (piece.getType() === 'king'){
+            let [x, y] = oldCell.getLocation();
+            let [x2, y2]  = newCell.getLocation();
+           
+            //If the king can move two squares
+            if (Math.abs(y - y2) === 2){
+                //and the cell to the immediate right of the new cell is a rook, then we have a right castle.
+                //This is always true because our hypothetical move checked for this 
+                if (!isEmptyAtLocation([x2, y2+1])){
+                    rightCastle = true;
+                }
+                //and the cell two units away to the left from the new cell is a rook, we have a left castle
+                if (!isEmptyAtLocation([x2, y2-2])){
+                    leftCastle = true;
+                }
+            }
+        }
+
+        if (rightCastle || leftCastle){
+            //Upon detection of castling, the king gets shifted first, then we move the default rook near it.
+            move(oldCell, newCell);
+            let [x,y] = piece.getLocation();
+            if (rightCastle){
+                let rRookCell = board[x][y+1];
+                movePiece(rRookCell, board[x][y-1]);
+            }
+            else{
+                let lRookCell = board[x][y-2];
+                movePiece(lRookCell, board[x][y+1]);
+            }
+            return true;
+        }
+        return false;
+}
+
+//Detects an enPassant capture then it will eat the enemy piece, otherwise nothing happens.
+//Returns true if enpassant capture is done, otherwise false.
+function captureByEnPassant(oldCell, newCell, piece){
+    if (piece.getType() === 'pawn'){
+        var enPassantCapture = false;
+        if (piece.firstMove === true){
+            piece.firstMove = false;
+        }
+        if (Math.abs(newCell.getLocation()[0] - oldCell.getLocation()[0]) === 2){
+            piece.displacementOfTwo = true;
+        }
+        //En Passant Capture
+        /*
+            The new cell is empty either means the pawn is moving forward or doing en passant.
+            If it is moving forward, there will never be a piece at the previous row after the pawn has moved.
+            If it is enpassant, there will be a piece at the previous row. 
+        */
+        if (isEmptyAtLocation(newCell.getLocation())){
+            let displacement = turn === 'white' ? 1 : -1;
+            let captureLocation = [newCell.getLocation()[0] + displacement, newCell.getLocation()[1]];
+            let captureCell = board[newCell.getLocation()[0] + displacement][newCell.getLocation()[1]];
+            if (isInBoard(captureLocation) && !isEmptyAtLocation(captureLocation) && !piece.isSameTeamAtLocation(captureLocation) && captureCell.getItem().getType() === 'pawn'){
+                eatAtCell(captureCell);
+                move(oldCell, newCell);
+                enPassantCapture = true;
+            }
+        }
+    }
+    return enPassantCapture;
+}
 /*
     Draw By "Three-Fold Repetition":https://www.youtube.com/watch?v=RIzV-NIWvkQ
     This rule states that if the same position is repeated 3 times (don't need to be in a row), then 
