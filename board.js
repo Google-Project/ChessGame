@@ -122,6 +122,12 @@ function movePiece(oldCell, newCell){
     // sets new location for chess piece
     newCell.getItem().setLocation(newCell.getLocation());
 
+    if(newCell.getItem().getType() == 'pawn' && (newCell.getLocation()[0] == 0 ||  newCell.getLocation()[0] == 7)){
+        displayPawnPromoSelection(newCell);
+        //create a variable that freezes the game so opponents cant move
+
+    }
+    
     //Checks if the enemy king can be checkmated (including the check)
     //Also switches turn.
     if (turn==='white'){
@@ -301,5 +307,98 @@ function removeObjectFromArray(arr, obj){
             arr.splice(i,1);
             return;
         }
+    }
+}
+
+function displayPawnPromoSelection(cell){
+    //pawn selection container is displayed
+    const ChoiceDisplay = document.getElementById("ChoiceDisplay");
+    ChoiceDisplay.style.display = "block";
+
+    //get div element from html file
+    const promotionSelection = document.getElementById("promotionSelection");
+
+    //adding images w/ on click function
+    let color = cell.getItem().getColor();
+    //console.log(color);
+     //create buttons if white pawn reaches end
+    if (color === "white"){
+        var queenButton = document.createElement('img');
+        queenButton.src="chess_models/chess_pieces/white-queen.png";
+        queenButton.addEventListener('click', function(){selected("queen", color, cell)});
+
+        var rookButton = document.createElement('img');
+        rookButton.src = "chess_models/chess_pieces/white-rook.png";
+        rookButton.addEventListener('click', function(){selected("rook", color, cell)})
+        
+        var bishopButton = document.createElement('img');
+        bishopButton.src = "chess_models/chess_pieces/white-bishop.png";
+        bishopButton.addEventListener('click', function(){selected("bishop", color, cell)})
+
+        var knightButton = document.createElement('img');
+        knightButton.src = "chess_models/chess_pieces/white-knight.png";
+        knightButton.addEventListener('click', function(){selected("knight", color, cell)})
+    } //create buttons when black pawn reaches the end
+    else {
+        var queenButton = document.createElement('img');
+        queenButton.src="chess_models/chess_pieces/black-queen.png";
+        queenButton.addEventListener('click', function(){selected("queen", color, cell)});
+
+        var rookButton = document.createElement('img');
+        rookButton.src = "chess_models/chess_pieces/black-rook.png";
+        rookButton.addEventListener('click', function(){selected("rook", color, cell)})
+        
+        var bishopButton = document.createElement('img');
+        bishopButton.src = "chess_models/chess_pieces/black-bishop.png";
+        bishopButton.addEventListener('click', function(){selected("bishop", color, cell)})
+
+        var knightButton = document.createElement('img');
+        knightButton.src = "chess_models/chess_pieces/black-knight.png";
+        knightButton.addEventListener('click', function(){selected("knight", color, cell)})
+    }
+    promotionSelection.appendChild(queenButton);
+    promotionSelection.appendChild(rookButton);
+    promotionSelection.appendChild(bishopButton);
+    promotionSelection.appendChild(knightButton);
+}
+
+
+function selected(type, color, cell){
+
+    //remove from alivePile from corresponding colors
+    if (color === "white"){
+        removeObjectFromArray(whitePiecesAlive, cell.getItem());
+    }
+    else{
+        removeObjectFromArray(blackPiecesAlive,cell.getItem());
+    }
+    
+    //set pawn's location to null
+    cell.getItem().setLocation(null);
+    //remove pawn from board
+    cell.getElement().removeChild(cell.getItem().getElement());
+    //set cell to empty
+    cell.setItem(null);
+
+    //add "selected new piece" to replace pawn
+    initializePiece(cell.getLocation(), color, type);
+    //add new piece to the alive pile
+    if (color ==="white"){
+        console.log(cell.getItem().getType());
+        whitePiecesAlive.push(cell.getItem());
+    }
+    else{
+        console.log(cell.getItem().getType());
+        blackPiecesAlive.push(cell.getItem());
+    }
+
+    //after onclick, remove pawn promotion box 
+    const ChoiceDisplay = document.getElementById("ChoiceDisplay");
+    ChoiceDisplay.style.display = "none";
+
+    //remove buttons
+    const promotionSelection = document.getElementById("promotionSelection");
+    while (promotionSelection.firstChild){
+        promotionSelection.removeChild(promotionSelection.firstChild);
     }
 }
