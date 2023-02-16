@@ -104,7 +104,7 @@ function initializeBoard(){
     }
 }
 
-//Moves a piece from old cell to new cell.
+
 //Replace the content of newCell by those of oldCell
 //Then set oldCell to an empty cell.
 function movePiece(oldCell, newCell){
