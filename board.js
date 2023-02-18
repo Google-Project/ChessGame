@@ -8,6 +8,9 @@ whitePiecesAlive = [];
 blackPiecesDead = [];
 whitePiecesDead = [];
 turn = "white";
+//turns on promotionPhase when pawn is in promotion phase
+//when promotionPhase is true, game should freeze 
+promotionPhase = false;
 
 
 //Initializes everything needed for the game.
@@ -24,8 +27,6 @@ function initializeBoard(){
     for (let i=0; i<board.length; i++){
         board[i] = new Array(8);
     }
-
-
     //An array of <tr> elements to append our cells to.
     var tableRowArr = document.getElementsByClassName('row');
 
@@ -61,44 +62,50 @@ function initializeBoard(){
             cellElement.onclick = function(e){
                 let cell = cellElement.object;
                 let pieceInCell = cell.getItem();
+                
+                if (promotionPhase === false){
+                    // if focus is chosen
+                    if (focus !== null){
+                        unhighlightLocations(focus.listMoves());
 
-                // if focus is chosen
-                if (focus !== null){
-                    //console.log(focus);
-                    unhighlightLocations(focus.listMoves());
+                        // if the location is a valid move (empty cell or enemy piece)
+                        if (focus.containMove(cell.getLocation())){
+                            
+                            // this is specifically for the pawn (MUST BE CHANGED FOR CASTLING)
+                            if (focus.firstMove === true)
+                                focus.firstMove = false;
 
-                    // if the location is a valid move (empty cell or enemy piece)
-                    if (focus.containMove(cell.getLocation())){
-                        movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
-                        endTurn();
-                        focus = null;
-                    }
-
-                    //if location contains the same-color piece 
-                    else if (focus.isSameTeamAtLocation(cell.getLocation())){
-                        //if the piece is the same as focus, do not highlight cells.
-                        if (focus.getLocation()[0]===cell.getLocation()[0] && focus.getLocation()[1]===cell.getLocation()[1]){
+                            movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
                             focus = null;
                         }
+
+                        //if location contains the same-color piece 
+                        else if (focus.isSameTeamAtLocation(cell.getLocation())){
+                            //if the piece is the same as focus, do not highlight cells.
+                            if (focus.getLocation()[0]===cell.getLocation()[0] && focus.getLocation()[1]===cell.getLocation()[1]){
+                                focus = null;
+                            }
+                            else{
+                                //The piece is a same-color piece as focus
+                                focus=pieceInCell;
+                                highlightPossibleMoves(cell);
+                            }
+                        }
+                        
+                        //if the location is not a valid move
                         else{
-                            //The piece is a same-color piece as focus
-                            focus=pieceInCell;
-                            highlightPossibleMoves(cell);
+                            focus = null;
                         }
                     }
-
-                    //if the location is not a valid move
+                    
+                    
+                    // if focus has not been chosen yet
                     else{
-                        focus = null;
-                    }
-                }
-
-                // if focus has not been chosen yet
-                else{
-                    // checks if there is a piece, it is of the correct color, and if it can even move in the first place
-                    if (pieceInCell !== null && pieceInCell.getColor()===turn && pieceInCell.listMoves().length > 0){
-                        highlightPossibleMoves(cell);
-                        focus = pieceInCell;
+                        // checks if there is a piece, it is of the correct color, and if it can even move in the first place
+                        if (pieceInCell !== null && pieceInCell.getColor()===turn && pieceInCell.listMoves().length > 0){
+                            highlightPossibleMoves(cell);
+                            focus = pieceInCell;
+                        }
                     }
                 }
             };
@@ -127,7 +134,7 @@ function endTurn(){
         else if (whiteKing.isStaleMated()){
             console.log("Stalemate Reached after Black has moved");
         }
-    }
+    }   
 }
 
 
@@ -156,6 +163,7 @@ function movePiece(oldCell, newCell){
 
     if(newCell.getItem().getType() == 'pawn' && (newCell.getLocation()[0] == 0 ||  newCell.getLocation()[0] == 7)){
         displayPawnPromoSelection(newCell);
+        promotionPhase = true;
         //create a variable that freezes the game so opponents cant move
     }
 }
@@ -513,4 +521,5 @@ function selected(type, color, cell){
     while (promotionSelection.firstChild){
         promotionSelection.removeChild(promotionSelection.firstChild);
     }
+    promotionPhase = false;
 }
