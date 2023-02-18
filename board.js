@@ -136,7 +136,6 @@ function movePiece(oldCell, newCell){
         turn = 'black';
         //Checks for checkmate on the enemy king
         //console.log() can be removed after things are finalized
-        console.log(turn);
         if (blackKing.isCheckmated()){
             console.log("Black King is Checkmated");
         }
@@ -387,11 +386,11 @@ function selected(type, color, cell){
     initializePiece(cell.getLocation(), color, type);
     //add new piece to the alive pile
     if (color ==="white"){
-        console.log(cell.getItem().getType());
+        //console.log(cell.getItem().getType());
         whitePiecesAlive.push(cell.getItem());
     }
     else{
-        console.log(cell.getItem().getType());
+        //console.log(cell.getItem().getType());
         blackPiecesAlive.push(cell.getItem());
     }
 
