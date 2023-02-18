@@ -42,6 +42,7 @@ promotionPhase = false;
             listMoves() on each alive piece. The format as same as above except instead of denoting locations,
             this denotes the moves a type of piece can take.
         ]
+        ,
     ]
 
     In other words, each entry contains positionTracker[[{}, {}, 1 (the counter)]]
@@ -345,8 +346,6 @@ function movePiece(oldCell, newCell){
         //Upon detection of castling, the king gets shifted first, then we move the default rook near it.
         move(oldCell, newCell);
         let [x,y] = piece.getLocation();
-        console.log(castle);
-        console.log(x, y);
         if (castle[0] === true){
             let lRookCell = board[x][y-2];
             movePiece(lRookCell, board[x][y+1]);
@@ -675,7 +674,7 @@ function displayPawnPromoSelection(cell){
 
 
 function selected(type, color, cell){
-
+    positionTracker = [];
     //remove from alivePile from corresponding colors
     if (color === "white"){
         removeObjectFromArray(whitePiecesAlive, cell.getItem());
