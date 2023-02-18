@@ -76,6 +76,7 @@ function initializeBoard(){
                                 focus.firstMove = false;
 
                             movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
+                            endTurn();
                             focus = null;
                         }
 
