@@ -8,19 +8,201 @@ whitePiecesAlive = [];
 blackPiecesDead = [];
 whitePiecesDead = [];
 turn = "white";
+
 //turns on promotionPhase when pawn is in promotion phase
 //when promotionPhase is true, game should freeze 
 promotionPhase = false;
 
+//position tracker for three-fold repetition
+/*
+    Format: A 2D array containing an array of objects
+    Assume positionTracker[i] contains an entry similar to:
+    [
+        {
+            brook = {
+                0:{
+                    0:true
+                }
+                0:{
+                    6:true
+                }
+            }
+            bbishop = 
+                ...
+
+            ...
+            wrook = ...
+            wbishop = ...
+
+            ...
+        
+        }
+        , 
+        [
+            listMoves() on each alive piece. The format as same as above except instead of denoting locations,
+            this denotes the moves a type of piece can take.
+        ]
+    ]
+
+    In other words, each entry contains positionTracker[[{}, {}, 1 (the counter)]]
+*/
+positionTracker = [];
 
 //Initializes everything needed for the game.
 function initializeGame(){
     initializeBoard();
     initializeModels();
-    
+    updateTracker();
     startTimer();
 }
 
+/*
+    The current position is either the same as one of the previous ones, or
+    a completely new position. We will account for both cases.
+*/
+function updateTracker(){
+    var samePositionIndex = positionExists();
+
+    //We have a matching position
+    if (samePositionIndex > -1){
+        console.log('matching position found');
+        positionTracker[samePositionIndex][2] += 1;
+        if (positionTracker[samePositionIndex][2] === 3){
+           console.log('draw by threefold-repetition');
+           positionTracker = [];
+        }
+    }
+    //We have a new position
+    else{
+        console.log('new position found');
+        let location = {};
+        let hyptMoves = {};
+        let counter = 1;
+
+        whitePiecesAlive.forEach(function(piece){
+            let key = 'w' + piece.getType();
+            let [x,y] = piece.getLocation();
+
+            //New location
+            if (!location[key]) location[key] = {};
+            if (!location[key][x]) location[key][x] = {};
+            if (!location[key][x][y]) location[key][x][y] = true;
+
+            //If it is white's turn, check if a hyptMove exist 
+            if (turn === 'white'){
+                piece.listMoves().forEach(function(move){
+                    let [x,y] = move;
+
+                    if (!hyptMoves[key]) hyptMoves[key] = {};
+                    if (!hyptMoves[key][x]) hyptMoves[key][x] = {};
+                    if (!hyptMoves[key][x][y]) hyptMoves[key][x][y] = true;
+                });
+            }
+        })
+
+        blackPiecesAlive.forEach(function(piece){
+            let key = 'b' + piece.getType();
+            let [x,y] = piece.getLocation();
+
+            //New location
+            if (!location[key]) location[key] = {};
+            if (!location[key][x]) location[key][x] = {};
+            if (!location[key][x][y]) location[key][x][y] = true;
+
+            //If it is white's turn, check if a hyptMove exist 
+            if (turn === 'black'){
+                piece.listMoves().forEach(function(move){
+                    let [x,y] = move;
+
+                    if (!hyptMoves[key]) hyptMoves[key] = {};
+                    if (!hyptMoves[key][x]) hyptMoves[key][x] = {};
+                    if (!hyptMoves[key][x][y]) hyptMoves[key][x][y] = true;
+                });
+            }
+        })
+
+            
+        positionTracker.push([location, hyptMoves, counter]);
+    }
+}
+
+function positionExists(){
+     //Iterate each position 
+     for (let i=0; i<positionTracker.length; i++){
+        let locationObj = positionTracker[i][0];;
+        let moveObj = positionTracker[i][1];
+        let isSamePosition = true;
+
+        //Checks if all white pieces' locations matches that of the current position.
+        whitePiecesAlive.forEach(function(piece){
+            let key = 'w' + piece.getType();
+            let moveArr = piece.listMoves();
+            let [x,y] = piece.getLocation();
+            
+            //Checks if a location exists
+            if (locationObj[key] && locationObj[key][x] && locationObj[key][x][y]){
+                //Do Nothing
+            }
+            else{
+                isSamePosition = false;
+            }
+
+            if (turn === 'white'){
+                //If it is the current player's turn, we want to also match its hypothetical moveset
+                moveArr.forEach(function(move){
+                    let [x,y] = move;
+                    //Checks if a move exists
+                    if (moveObj[key] && moveObj[key][x] && moveObj[key][x][y]){
+                        //Do Nothing
+                    }
+                    else{
+                        isSamePosition = false;
+                    }
+                })
+            }
+        });
+
+
+        //If a location/move does not match above, skip to the next position (if any)
+        if (!isSamePosition) continue;
+
+        //Otherwise check if all black pieces' locations/moves matches that of the current position.
+         blackPiecesAlive.forEach(function(piece){
+            let key = 'b' + piece.getType();
+            let moveArr = piece.listMoves();
+            let [x,y] = piece.getLocation();
+
+            //Checks if a location exist
+            if (locationObj[key] && locationObj[key][x] && locationObj[key][x][y]){
+                //Do Nothing
+            }
+            else{
+                isSamePosition = false;
+            }
+
+            if (turn === 'black'){
+                //If it is the current player's turn, we want to also match its hypothetical moveset
+                moveArr.forEach(function(move){
+                    let [x,y] = move;
+                    //Checks if a move exists
+                    if (moveObj[key] && moveObj[key][x] && moveObj[key][x][y]){
+                        //Do Nothing
+                    }
+                    else{
+                        isSamePosition = false;
+                    }
+                })
+            }
+        });
+        
+        //If a position matches, we will exit and return the index of that position.
+        if (isSamePosition){
+            return i;
+        }
+     };
+
+    return -1;
+}
 function initializeBoard(){
     //2D Board
     board = new Array(8);
@@ -76,6 +258,7 @@ function initializeBoard(){
                                 focus.firstMove = false;
 
                             movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
+                            updateTracker();
                             endTurn();
                             focus = null;
                         }
@@ -144,15 +327,35 @@ function endTurn(){
 function movePiece(oldCell, newCell){
     var piece = oldCell.getItem();
     var type = piece.getType();
+    var castle = canCastle(oldCell, newCell, piece);
     //Disable first move for pawn/rook/king
     if (type === 'pawn' || type === 'rook' || type === 'king'){
         piece.firstMove = false;
     }
 
     //If enPassant is detected, it will eat the enemy piece, and move the pawn to the new cell
-    if (captureByEnPassant(oldCell, newCell, piece)){}
+    if (captureByEnPassant(oldCell, newCell, piece)){
+        let displacement = turn === 'white' ? 1 : -1;
+        let captureCell = board[newCell.getLocation()[0] + displacement][newCell.getLocation()[1]];
+        eatAtCell(captureCell);
+        move(oldCell, newCell);
+    }
     //If castling is detected, it will first shift the king to the new cell, then shift the rook to the new cell
-    else if (performCastling(oldCell, newCell, piece)){}
+    else if (castle.length > 0){
+        //Upon detection of castling, the king gets shifted first, then we move the default rook near it.
+        move(oldCell, newCell);
+        let [x,y] = piece.getLocation();
+        console.log(castle);
+        console.log(x, y);
+        if (castle[0] === true){
+            let lRookCell = board[x][y-2];
+            movePiece(lRookCell, board[x][y+1]);
+        }
+        else if (castle[1] === true){         
+            let rRookCell = board[x][y+1];
+            movePiece(rRookCell, board[x][y-1]);
+        }
+    }
     //Normal Moves
     else{
         move(oldCell, newCell);
@@ -187,52 +390,46 @@ function move(oldCell, newCell){
 }
 
 /*
-    Perform castling, if any.
-    Returns true if castling is performed, otherwise false.
+    Detects if king can castle
+    Returns an array containing whether the [left, right] castle can be performed
 */
-function performCastling(oldCell, newCell, piece){
-        //If castling is detected, it will be performed in the performCastling function below
-        var rightCastle = false;
-        var leftCastle = false;
-    
+function canCastle(oldCell, newCell, piece){
+        var leftRightCastle = [false, false];
         //Check for castling
         if (piece.getType() === 'king'){
-            let [x, y] = oldCell.getLocation();
+            let y = oldCell.getLocation()[1];
             let [x2, y2]  = newCell.getLocation();
            
             //If the king can move two squares
             if (Math.abs(y - y2) === 2){
-                //and the cell to the immediate right of the new cell is a rook, then we have a right castle.
-                //This is always true because our hypothetical move checked for this 
-                if (!isEmptyAtLocation([x2, y2+1])){
-                    rightCastle = true;
+                /*
+                    Since both and right castle involves the king moving two squares, we actually need
+                    to check for them.
+                */
+                if (isInBoard([x2, y2+1])){
+                    let rCell = board[x2][y2+1];
+                    if (!isEmptyAtLocation(rCell.getLocation()) && piece.isSameTeamAtLocation(rCell.getLocation())){
+                        if (rCell.getItem().getType() === 'rook' && rCell.getItem().firstMove === true){
+                            leftRightCastle[1] = true;
+                        }
+                    }
                 }
-                //and the cell two units away to the left from the new cell is a rook, we have a left castle
-                if (!isEmptyAtLocation([x2, y2-2])){
-                    leftCastle = true;
-                }
-            }
-        }
 
-        if (rightCastle || leftCastle){
-            //Upon detection of castling, the king gets shifted first, then we move the default rook near it.
-            move(oldCell, newCell);
-            let [x,y] = piece.getLocation();
-            if (rightCastle){
-                let rRookCell = board[x][y+1];
-                movePiece(rRookCell, board[x][y-1]);
+                if (isInBoard([x2, y2-2])){
+                    let lCell = board[x2][y2-2];
+                    if (!isEmptyAtLocation(lCell.getLocation()) && piece.isSameTeamAtLocation(lCell.getLocation())){
+                        if (lCell.getItem().getType() === 'rook' && lCell.getItem().firstMove === true){
+                            leftRightCastle[0] = true;
+                        }
+                    }
+                }
             }
-            else{
-                let lRookCell = board[x][y-2];
-                movePiece(lRookCell, board[x][y+1]);
-            }
-            return true;
         }
-        return false;
+        return leftRightCastle;
 }
 
-//Detects an enPassant capture then it will eat the enemy piece, otherwise nothing happens.
-//Returns true if enpassant capture is done, otherwise false.
+//Detects an enPassant capture 
+//Returns true if enpassant capture is detected
 function captureByEnPassant(oldCell, newCell, piece){
     if (piece.getType() === 'pawn'){
         var enPassantCapture = false;
@@ -253,27 +450,11 @@ function captureByEnPassant(oldCell, newCell, piece){
             let captureLocation = [newCell.getLocation()[0] + displacement, newCell.getLocation()[1]];
             let captureCell = board[newCell.getLocation()[0] + displacement][newCell.getLocation()[1]];
             if (isInBoard(captureLocation) && !isEmptyAtLocation(captureLocation) && !piece.isSameTeamAtLocation(captureLocation) && captureCell.getItem().getType() === 'pawn'){
-                eatAtCell(captureCell);
-                move(oldCell, newCell);
                 enPassantCapture = true;
             }
         }
     }
     return enPassantCapture;
-}
-/*
-    Draw By "Three-Fold Repetition":https://www.youtube.com/watch?v=RIzV-NIWvkQ
-    This rule states that if the same position is repeated 3 times (don't need to be in a row), then 
-    the game ends in a draw. However, there is a bit of a nuance here.
-
-    A position is considered to be the "same" (watch 2:00 in the link above) by these conditions:
-    1. The player's pieces has the same set of rights as the previous move that the player made, INCLUDING 
-    the rights of enpassant AND the right to castle. 
-
-    This will be updated later after completing en passant and castling.
-*/
-function isDrawByRepetition(){
-    return; //placeholder
 }
 
 //Removes any previous en passant opportunities in the current state
@@ -421,6 +602,7 @@ function highlightArrayOfLocations(arr){
 // eats the piece at given cell
 // Cell is the parameter
 function eatAtCell(cell){
+    positionTracker = [];
     let piece = cell.getItem();
     piece.setLocation(null);
 
