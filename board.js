@@ -91,8 +91,14 @@ function initializeBoard(){
                                 highlightPossibleMoves(cell);
                             }
                         }
+                        
+                        //if the location is not a valid move
+                        else{
+                            focus = null;
+                        }
                     }
-
+                    
+                    
                     // if focus has not been chosen yet
                     else{
                         // checks if there is a piece, it is of the correct color, and if it can even move in the first place
@@ -107,31 +113,9 @@ function initializeBoard(){
     }
 }
 
-//Moves a piece from old cell to new cell.
-//Replace the content of newCell by those of oldCell
-//Then set oldCell to an empty cell.
-function movePiece(oldCell, newCell){
-    // Eats chess piece and removes any traces of piece in new cell
-    if(newCell.getItem()!==null)
-    eatAtCell(newCell);
-
-    // set cells to their appropriate items
-    newCell.setItem(oldCell.getItem());
-    oldCell.setItem(null);
-
-    // adds chess piece display
-    newCell.getElement().appendChild(newCell.getItem().getElement());
-
-    // sets new location for chess piece
-    newCell.getItem().setLocation(newCell.getLocation());
-
-    if(newCell.getItem().getType() == 'pawn' && (newCell.getLocation()[0] == 0 ||  newCell.getLocation()[0] == 7)){
-        displayPawnPromoSelection(newCell);
-        promotionPhase = true;
-        //create a variable that freezes the game so opponents cant move
-
-    }
-
+function endTurn(){
+    //Checks if the enemy king can be checkmated (including the check)
+    //Also switches turn.
     if (turn==='white'){
         turn = 'black';
         //Checks for checkmate on the enemy king
@@ -151,6 +135,158 @@ function movePiece(oldCell, newCell){
             console.log("Stalemate Reached after Black has moved");
         }
     }   
+}
+
+
+//Replace the content of newCell by those of oldCell
+//Then set oldCell to an empty cell.
+function movePiece(oldCell, newCell){
+    var piece = oldCell.getItem();
+    var type = piece.getType();
+    //Disable first move for pawn/rook/king
+    if (type === 'pawn' || type === 'rook' || type === 'king'){
+        piece.firstMove = false;
+    }
+
+    //If enPassant is detected, it will eat the enemy piece, and move the pawn to the new cell
+    if (captureByEnPassant(oldCell, newCell, piece)){}
+    //If castling is detected, it will first shift the king to the new cell, then shift the rook to the new cell
+    else if (performCastling(oldCell, newCell, piece)){}
+    //Normal Moves
+    else{
+        move(oldCell, newCell);
+    }
+ 
+    //In case there was a possible en passant capture and the player didnt choose it, we need to set the 
+    //displaceMentOfTwo boolean to false.
+    removePreviousEnpassant();
+
+    if(newCell.getItem().getType() == 'pawn' && (newCell.getLocation()[0] == 0 ||  newCell.getLocation()[0] == 7)){
+        displayPawnPromoSelection(newCell);
+        promotionPhase = true;
+        //create a variable that freezes the game so opponents cant move
+    }
+}
+
+//Moves a piece to another cell
+function move(oldCell, newCell){
+    // Eats chess piece and removes any traces of piece in new cell
+    if(newCell.getItem()!==null){
+        eatAtCell(newCell);
+    }
+    // set cells to their appropriate items
+    newCell.setItem(oldCell.getItem());
+    oldCell.setItem(null);
+
+    // adds chess piece display
+    newCell.getElement().appendChild(newCell.getItem().getElement());
+
+    // sets new location for chess piece
+    newCell.getItem().setLocation(newCell.getLocation());
+}
+
+/*
+    Perform castling, if any.
+    Returns true if castling is performed, otherwise false.
+*/
+function performCastling(oldCell, newCell, piece){
+        //If castling is detected, it will be performed in the performCastling function below
+        var rightCastle = false;
+        var leftCastle = false;
+    
+        //Check for castling
+        if (piece.getType() === 'king'){
+            let [x, y] = oldCell.getLocation();
+            let [x2, y2]  = newCell.getLocation();
+           
+            //If the king can move two squares
+            if (Math.abs(y - y2) === 2){
+                //and the cell to the immediate right of the new cell is a rook, then we have a right castle.
+                //This is always true because our hypothetical move checked for this 
+                if (!isEmptyAtLocation([x2, y2+1])){
+                    rightCastle = true;
+                }
+                //and the cell two units away to the left from the new cell is a rook, we have a left castle
+                if (!isEmptyAtLocation([x2, y2-2])){
+                    leftCastle = true;
+                }
+            }
+        }
+
+        if (rightCastle || leftCastle){
+            //Upon detection of castling, the king gets shifted first, then we move the default rook near it.
+            move(oldCell, newCell);
+            let [x,y] = piece.getLocation();
+            if (rightCastle){
+                let rRookCell = board[x][y+1];
+                movePiece(rRookCell, board[x][y-1]);
+            }
+            else{
+                let lRookCell = board[x][y-2];
+                movePiece(lRookCell, board[x][y+1]);
+            }
+            return true;
+        }
+        return false;
+}
+
+//Detects an enPassant capture then it will eat the enemy piece, otherwise nothing happens.
+//Returns true if enpassant capture is done, otherwise false.
+function captureByEnPassant(oldCell, newCell, piece){
+    if (piece.getType() === 'pawn'){
+        var enPassantCapture = false;
+        if (piece.firstMove === true){
+            piece.firstMove = false;
+        }
+        if (Math.abs(newCell.getLocation()[0] - oldCell.getLocation()[0]) === 2){
+            piece.displacementOfTwo = true;
+        }
+        //En Passant Capture
+        /*
+            The new cell is empty either means the pawn is moving forward or doing en passant.
+            If it is moving forward, there will never be a piece at the previous row after the pawn has moved.
+            If it is enpassant, there will be a piece at the previous row. 
+        */
+        if (isEmptyAtLocation(newCell.getLocation())){
+            let displacement = turn === 'white' ? 1 : -1;
+            let captureLocation = [newCell.getLocation()[0] + displacement, newCell.getLocation()[1]];
+            let captureCell = board[newCell.getLocation()[0] + displacement][newCell.getLocation()[1]];
+            if (isInBoard(captureLocation) && !isEmptyAtLocation(captureLocation) && !piece.isSameTeamAtLocation(captureLocation) && captureCell.getItem().getType() === 'pawn'){
+                eatAtCell(captureCell);
+                move(oldCell, newCell);
+                enPassantCapture = true;
+            }
+        }
+    }
+    return enPassantCapture;
+}
+/*
+    Draw By "Three-Fold Repetition":https://www.youtube.com/watch?v=RIzV-NIWvkQ
+    This rule states that if the same position is repeated 3 times (don't need to be in a row), then 
+    the game ends in a draw. However, there is a bit of a nuance here.
+
+    A position is considered to be the "same" (watch 2:00 in the link above) by these conditions:
+    1. The player's pieces has the same set of rights as the previous move that the player made, INCLUDING 
+    the rights of enpassant AND the right to castle. 
+
+    This will be updated later after completing en passant and castling.
+*/
+function isDrawByRepetition(){
+    return; //placeholder
+}
+
+//Removes any previous en passant opportunities in the current state
+function removePreviousEnpassant(){
+    var alivePieces = turn === 'white' ? blackPiecesAlive : whitePiecesAlive;
+    for (let i=0; i<alivePieces.length; i++){
+        let piece = alivePieces[i];
+        if (piece.getType() === 'pawn'){
+            //En Passant cannot exist when first move was used
+            if (!piece.firstMove){
+                piece.displacementOfTwo = false;
+            }
+        }
+    }
 }
 
 //Helper function to intialize a chess piece
@@ -323,41 +459,31 @@ function displayPawnPromoSelection(cell){
     //adding images w/ on click function
     let color = cell.getItem().getColor();
     //console.log(color);
-     //create buttons if white pawn reaches end
-    if (color === "white"){
-        var queenButton = document.createElement('img');
-        queenButton.src="chess_models/chess_pieces/white-queen.png";
-        queenButton.addEventListener('click', function(){selected("queen", color, cell)});
 
-        var rookButton = document.createElement('img');
-        rookButton.src = "chess_models/chess_pieces/white-rook.png";
-        rookButton.addEventListener('click', function(){selected("rook", color, cell)})
+    /*
+        I optimized the functions a little, also looks good so far.
+        Please also add a "freeze" when a player is still choosing a 
+        selection (knight, bishop, rook, queen) for pawn promotion.
         
-        var bishopButton = document.createElement('img');
-        bishopButton.src = "chess_models/chess_pieces/white-bishop.png";
-        bishopButton.addEventListener('click', function(){selected("bishop", color, cell)})
+        Currently, when the pawn promotion display shows up, I can still
+        move pieces around without having to select a choice for the promotion.
+    */
+    var queenButton = document.createElement('img');
+    queenButton.src=`chess_models/chess_pieces/${color}-queen.png`;
+    queenButton.addEventListener('click', function(){selected("queen", color, cell)});
 
-        var knightButton = document.createElement('img');
-        knightButton.src = "chess_models/chess_pieces/white-knight.png";
-        knightButton.addEventListener('click', function(){selected("knight", color, cell)})
-    } //create buttons when black pawn reaches the end
-    else {
-        var queenButton = document.createElement('img');
-        queenButton.src="chess_models/chess_pieces/black-queen.png";
-        queenButton.addEventListener('click', function(){selected("queen", color, cell)});
-
-        var rookButton = document.createElement('img');
-        rookButton.src = "chess_models/chess_pieces/black-rook.png";
-        rookButton.addEventListener('click', function(){selected("rook", color, cell)})
+    var rookButton = document.createElement('img');
+    rookButton.src = `chess_models/chess_pieces/${color}-rook.png`;
+    rookButton.addEventListener('click', function(){selected("rook", color, cell)})
         
-        var bishopButton = document.createElement('img');
-        bishopButton.src = "chess_models/chess_pieces/black-bishop.png";
-        bishopButton.addEventListener('click', function(){selected("bishop", color, cell)})
+    var bishopButton = document.createElement('img');
+    bishopButton.src = `chess_models/chess_pieces/${color}-bishop.png`;
+    bishopButton.addEventListener('click', function(){selected("bishop", color, cell)})
 
-        var knightButton = document.createElement('img');
-        knightButton.src = "chess_models/chess_pieces/black-knight.png";
-        knightButton.addEventListener('click', function(){selected("knight", color, cell)})
-    }
+    var knightButton = document.createElement('img');
+    knightButton.src = `chess_models/chess_pieces/${color}-knight.png`;
+    knightButton.addEventListener('click', function(){selected("knight", color, cell)})
+    
     promotionSelection.appendChild(queenButton);
     promotionSelection.appendChild(rookButton);
     promotionSelection.appendChild(bishopButton);
@@ -383,16 +509,8 @@ function selected(type, color, cell){
     cell.setItem(null);
 
     //add "selected new piece" to replace pawn
+    //Note that this method will also add the piece to white/blackPiecesAlive array.
     initializePiece(cell.getLocation(), color, type);
-    //add new piece to the alive pile
-    if (color ==="white"){
-        //console.log(cell.getItem().getType());
-        whitePiecesAlive.push(cell.getItem());
-    }
-    else{
-        //console.log(cell.getItem().getType());
-        blackPiecesAlive.push(cell.getItem());
-    }
 
     //after onclick, remove pawn promotion box 
     const ChoiceDisplay = document.getElementById("ChoiceDisplay");
