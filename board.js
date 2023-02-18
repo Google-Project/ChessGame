@@ -27,8 +27,6 @@ function initializeBoard(){
     for (let i=0; i<board.length; i++){
         board[i] = new Array(8);
     }
-
-
     //An array of <tr> elements to append our cells to.
     var tableRowArr = document.getElementsByClassName('row');
 
@@ -113,8 +111,6 @@ function initializeBoard(){
 //Replace the content of newCell by those of oldCell
 //Then set oldCell to an empty cell.
 function movePiece(oldCell, newCell){
-    
-
     // Eats chess piece and removes any traces of piece in new cell
     if(newCell.getItem()!==null)
     eatAtCell(newCell);
@@ -135,10 +131,6 @@ function movePiece(oldCell, newCell){
         //create a variable that freezes the game so opponents cant move
 
     }
-
-    //turns promotion phase false
-    //Checks if the enemy king can be checkmated (including the check)
-    //Also switches turn.
 
     if (turn==='white'){
         turn = 'black';
