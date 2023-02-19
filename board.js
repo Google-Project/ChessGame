@@ -252,9 +252,6 @@ function initializeBoard(){
                         // if the location is a valid move (empty cell or enemy piece)
                         if (focus.containMove(cell.getLocation())){
                             movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
-
-                            //The tracker activtes immediately if promotion phase is set to false
-                            if (!promotionPhase) updateTracker();
                             endTurn();
                             focus = null;
                         }
@@ -293,9 +290,25 @@ function initializeBoard(){
     }
 }
 
+function isDrawByThreefoldRepetition(){
+    var samePositionIndex = positionExists();
+    if (samePositionIndex !== -1){
+        if (positionTracker[samePositionIndex][2] === 3) return true;
+    }
+    return false;
+}
+
 function endTurn(){
-    //Checks if the enemy king can be checkmated (including the check)
-    //Also switches turn.
+    //The tracker activtes immediately if promotion phase is set to false
+    if (!promotionPhase) updateTracker();
+
+    //Checks for draws regardless of color
+    if (isDrawByThreefoldRepetition()){
+        console.log("Draw by Threefold Repetition");
+    }
+
+    //Checks for checkmate, stalemate (draw)
+    //Also switches turn
     if (turn==='white'){
         turn = 'black';
         //Checks for checkmate on the enemy king
@@ -305,7 +318,7 @@ function endTurn(){
         }
         else if (blackKing.isStaleMated()){
             console.log("Stalemate Reached after White has moved");
-        }
+        }   
     }else{
         turn = 'white';
         if (whiteKing.isCheckmated()){
