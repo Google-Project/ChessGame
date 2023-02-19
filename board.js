@@ -299,6 +299,53 @@ function isDrawByThreefoldRepetition(){
     return false;
 }
 
+/*
+    Conditions: https://support.chess.com/article/128-what-does-insufficient-mating-material-mean
+
+*/
+function isDrawByInsufficientMaterial(){
+    var isDraw = false;
+    if (whitePiecesAlive.length <= 3 && blackPiecesAlive.length <= 3){
+        let wPiece = null;
+        let wPieceTwo = null;
+        whitePiecesAlive.forEach(function(piece){
+            if (piece.getType() !== 'king'){
+                if (wPiece === null) wPiece = piece;
+                else if (wPieceTwo === null) wPieceTwo = piece;
+            }
+        });
+
+      
+        let bPiece = null;
+        let bPieceTwo = null;
+        blackPiecesAlive.forEach(function(piece){
+            if (piece.getType() !== 'king'){
+                if (bPiece === null) bPiece = piece;
+                else if (bPieceTwo === null) bPieceTwo = piece;
+            }
+        });
+
+        if (wPiece === null || wPiece.getType() === 'bishop' || wPiece.getType() === 'knight'){
+            //White has double knights and black has lone king, then draw.
+            if (wPiece.getType() === 'knight' && wPieceTwo && wPieceTwo.getType() === 'knight'){
+                if (bPiece === null) isDraw = true;
+            }
+            //Black has double knights and white has lone king, then draw.
+            else if (bPiece.getType() === 'knight' && bPieceTwo && bPieceTwo.getType() === 'knight'){
+                if (wPiece === null) isDraw = true;
+            }
+            //White has a lone king or two pieces either a bishop or knight and a king
+            else if (wPieceTwo === null && (bPiece === null || bPiece.getType() === 'bishop' || bPiece.getType() === 'knight')){
+                //If black has a lone king or two pieces either a bishop or knight and a king, then it is a draw
+                if (bPieceTwo === null){
+                    isDraw = true;
+                }
+            }
+        }
+    }
+    return isDraw;
+}
+
 function endTurn(){
     //The tracker activtes immediately if promotion phase is set to false
     if (!promotionPhase) updateTracker();
@@ -308,6 +355,9 @@ function endTurn(){
     //Checks for draws regardless of color
     if (isDrawByThreefoldRepetition()){
         console.log("Draw by Threefold Repetition");
+    }
+    else if (isDrawByInsufficientMaterial()){
+        console.log("Draw by Insufficient Materials");
     }
 
     //Checks for checkmate, stalemate (draw)
