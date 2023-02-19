@@ -299,17 +299,46 @@ function isDrawByThreefoldRepetition(){
 
 */
 function isDrawByInsufficientMaterial(){
-    if (whitePiecesAlive.length <= 2 && blackPiecesAlive.length <= 2){
-        let wPiece = (whitePiecesAlive[0].getType() !== 'king' ? whitePiecesAlive[0] : whitePiecesAlive[1]) || null;
-        let bPiece = (blackPiecesAlive[0].getType() !== 'king' ? blackPiecesAlive[0] : blackPiecesAlive[1]) || null;
+    var isDraw = false;
+    if (whitePiecesAlive.length <= 3 && blackPiecesAlive.length <= 3){
+        let wPiece = null;
+        let wPieceTwo = null;
+        whitePiecesAlive.forEach(function(piece){
+            if (piece.getType() !== 'king'){
+                if (wPiece === null) wPiece = piece;
+                else if (wPieceTwo === null) wPieceTwo = piece;
+            }
+        });
+
+      
+        let bPiece = null;
+        let bPieceTwo = null;
+        blackPiecesAlive.forEach(function(piece){
+            if (piece.getType() !== 'king'){
+                if (bPiece === null) bPiece = piece;
+                else if (bPieceTwo === null) bPieceTwo = piece;
+            }
+        });
 
         if (wPiece === null || wPiece.getType() === 'bishop' || wPiece.getType() === 'knight'){
-            if (bPiece === null || bPiece.getType() === 'bishop' || bPiece.getType() === 'knight'){
-                console.log("Draw by Insufficient Materials");
+            //White has double knights and black has lone king, then draw.
+            if (wPiece.getType() === 'knight' && wPieceTwo && wPieceTwo.getType() === 'knight'){
+                if (bPiece === null) isDraw = true;
+            }
+            //Black has double knights and white has lone king, then draw.
+            else if (bPiece.getType() === 'knight' && bPieceTwo && bPieceTwo.getType() === 'knight'){
+                if (wPiece === null) isDraw = true;
+            }
+            //White has a lone king or two pieces either a bishop or knight and a king
+            else if (wPieceTwo === null && (bPiece === null || bPiece.getType() === 'bishop' || bPiece.getType() === 'knight')){
+                //If black has a lone king or two pieces either a bishop or knight and a king, then it is a draw
+                if (bPieceTwo === null){
+                    isDraw = true;
+                }
             }
         }
     }
-    return false;
+    return isDraw;
 }
 
 function endTurn(){
@@ -323,7 +352,7 @@ function endTurn(){
     else if (isDrawByInsufficientMaterial()){
         console.log("Draw by Insufficient Materials");
     }
-    
+
     //Checks for checkmate, stalemate (draw)
     //Also switches turn
     if (turn==='white'){
