@@ -649,7 +649,7 @@ class King extends ChessPiece{
         }
     }
 
-    //Check if enemy king is checkmated after a player has moved a piece and switched turn.
+    //Check if enemy king is listed after a player has moved a piece and switched turn.
     isCheckmated(){
         if (this.isInCheck() && !super.sameColorPiecesCanMove()){
             return true;
