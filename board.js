@@ -18,6 +18,11 @@ turn = "white";
 //when promotionPhase is true, game should freeze 
 promotionPhase = false;
 
+//variable to check if game is drawn or in checkmate
+//false = game can still be played
+//true = game has ended
+gameEnded = false; 
+
 //position tracker for three-fold repetition
 /*
     Format: A 2D array containing an array of objects
@@ -245,44 +250,46 @@ function initializeBoard(){
                 let cell = cellElement.object;
                 let pieceInCell = cell.getItem();
                 
-                if (promotionPhase === false){
-                    // if focus is chosen
-                    if (focus !== null){
-                        unhighlightLocations(focus.listMoves());
-
-                        // if the location is a valid move (empty cell or enemy piece)
-                        if (focus.containMove(cell.getLocation())){
-                            movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
-                            endTurn();
-                            focus = null;
-                        }
-
-                        //if location contains the same-color piece 
-                        else if (focus.isSameTeamAtLocation(cell.getLocation())){
-                            //if the piece is the same as focus, do not highlight cells.
-                            if (focus.getLocation()[0]===cell.getLocation()[0] && focus.getLocation()[1]===cell.getLocation()[1]){
+                if (gameEnded === false){
+                    if (promotionPhase === false){
+                        // if focus is chosen
+                        if (focus !== null){
+                            unhighlightLocations(focus.listMoves());
+    
+                            // if the location is a valid move (empty cell or enemy piece)
+                            if (focus.containMove(cell.getLocation())){
+                                movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
+                                endTurn();
                                 focus = null;
                             }
+    
+                            //if location contains the same-color piece 
+                            else if (focus.isSameTeamAtLocation(cell.getLocation())){
+                                //if the piece is the same as focus, do not highlight cells.
+                                if (focus.getLocation()[0]===cell.getLocation()[0] && focus.getLocation()[1]===cell.getLocation()[1]){
+                                    focus = null;
+                                }
+                                else{
+                                    //The piece is a same-color piece as focus
+                                    focus=pieceInCell;
+                                    highlightPossibleMoves(cell);
+                                }
+                            }
+                            
+                            //if the location is not a valid move
                             else{
-                                //The piece is a same-color piece as focus
-                                focus=pieceInCell;
-                                highlightPossibleMoves(cell);
+                                focus = null;
                             }
                         }
                         
-                        //if the location is not a valid move
+                        
+                        // if focus has not been chosen yet
                         else{
-                            focus = null;
-                        }
-                    }
-                    
-                    
-                    // if focus has not been chosen yet
-                    else{
-                        // checks if there is a piece, it is of the correct color, and if it can even move in the first place
-                        if (pieceInCell !== null && pieceInCell.getColor()===turn && pieceInCell.listMoves().length > 0){
-                            highlightPossibleMoves(cell);
-                            focus = pieceInCell;
+                            // checks if there is a piece, it is of the correct color, and if it can even move in the first place
+                            if (pieceInCell !== null && pieceInCell.getColor()===turn && pieceInCell.listMoves().length > 0){
+                                highlightPossibleMoves(cell);
+                                focus = pieceInCell;
+                            }
                         }
                     }
                 }
@@ -350,11 +357,17 @@ function endTurn(){
     //The tracker activtes immediately if promotion phase is set to false
     if (!promotionPhase) updateTracker();
 
-    //checks if 
+    //initiliazes a variable "condition" that collects the string about how the game ends
+    gameEndCondition = "";
 
     //Checks for draws regardless of color
     if (isDrawByThreefoldRepetition()){
         console.log("Draw by Threefold Repetition");
+        //set gameEnded variable as true and freeze game
+        gameEnded = true;
+        //function to display game ended sign
+        gameEndCondition = "Draw by Threefold Repetition: Game Ended in Draw";
+            displayGameEnded(gameEndCondition);
     }
     else if (isDrawByInsufficientMaterial()){
         console.log("Draw by Insufficient Materials");
@@ -368,22 +381,47 @@ function endTurn(){
         //console.log() can be removed after things are finalized
         if (blackKing.isCheckmated()){
             console.log("Black King is Checkmated");
+            //set gameEnded variable as true and freeze game
+            gameEnded = true;
+            //function to display game ended sign
+            gameEndCondition = "Black King is Checkmated";
+            displayGameEnded(gameEndCondition);
         }
         else if (blackKing.isStaleMated()){
             console.log("Stalemate Reached after White has moved");
+            //set gameEnded variable as true and freeze game
+            gameEnded = true;
+            //function to display game ended sign
+            gameEndCondition = "Stalemate Reached after White has moved";
+            displayGameEnded(gameEndCondition);
         }   
     }else{
         turn = 'white';
         if (whiteKing.isCheckmated()){
             console.log("White King is Checkmated");
+            //set gameEnded variable as true and freeze game
+            gameEnded = true;
+            //function to display game ended sign
+            gameEndCondition = "White King is Checkmated";
+            displayGameEnded(gameEndCondition);
         }
         else if (whiteKing.isStaleMated()){
             console.log("Stalemate Reached after Black has moved");
+            //set gameEnded variable as true and freeze game
+            gameEnded = true;
+            //function to display game ended sign
+            gameEndCondition = "Stalemate Reached after Black has moved";
+            displayGameEnded(gameEndCondition);
         }
     }
     
     if (blackMovesCount == 50 && whiteMovesCount == 50){
         console.log("Both sides have reached 50 moves: Game Ended in Draw")
+        //set gameEnded variable as true and freeze game
+        gameEnded = true;
+        //function to display game ended sign
+        gameEndCondition = "Both sides have reached 50 moves: Game Ended in Draw";
+            displayGameEnded(gameEndCondition);
     }
 }
 
@@ -792,4 +830,23 @@ function selected(type, color, cell){
     }
     promotionPhase = false;
     updateTracker();
+}
+
+function displayGameEnded(condition){
+    //condition should be a string that will be displayed to indicate how the game has ended
+    const endGameDisplay = document.getElementById("endGameDisplay");
+    endGameDisplay.style.display = "block";
+
+    const endTerms = document.createElement('div');
+    endTerms.innerHTML = `
+        ${condition}
+    `
+    var playAgain = document.createElement('button');
+    playAgain.innerText = `Play Again`;
+    playAgain.addEventListener('click', function(){window.location.reload()});
+    endGameDisplay.appendChild(endTerms);
+    endGameDisplay.appendChild(playAgain);
+
+    //sets gameEnded to true: game has ended
+    gameEnded = true;
 }
