@@ -9,6 +9,11 @@ blackPiecesDead = [];
 whitePiecesDead = [];
 turn = "white";
 
+//counter for number of moves made that are not cpatures/pawn moves
+//seperate counter for white and black, both need to reach 50 to force draw
+ whiteMovesCount = 0;
+ blackMovesCount = 0;
+
 //turns on promotionPhase when pawn is in promotion phase
 //when promotionPhase is true, game should freeze 
 promotionPhase = false;
@@ -298,6 +303,8 @@ function endTurn(){
     //The tracker activtes immediately if promotion phase is set to false
     if (!promotionPhase) updateTracker();
 
+    //checks if 
+
     //Checks for draws regardless of color
     if (isDrawByThreefoldRepetition()){
         console.log("Draw by Threefold Repetition");
@@ -323,7 +330,11 @@ function endTurn(){
         else if (whiteKing.isStaleMated()){
             console.log("Stalemate Reached after Black has moved");
         }
-    }   
+    }
+    
+    if (blackMovesCount == 50 && whiteMovesCount == 50){
+        console.log("Both sides have reached 50 moves: Game Ended in Draw")
+    }
 }
 
 
@@ -335,7 +346,7 @@ function movePiece(oldCell, newCell){
     var castle = canCastle(oldCell, newCell, piece);
     //Disable first move for pawn/rook/king
     if (type === 'pawn' || type === 'rook' || type === 'king'){
-        piece.firstMove = false;
+        piece.firstMove = false;    
     }
 
     //If enPassant is detected, it will eat the enemy piece, and move the pawn to the new cell
@@ -378,9 +389,40 @@ function movePiece(oldCell, newCell){
 //Moves a piece to another cell
 function move(oldCell, newCell){
     // Eats chess piece and removes any traces of piece in new cell
+    // reset counts if eaten
     if(newCell.getItem()!==null){
         eatAtCell(newCell);
+        //piece eaten, reset number of moves count
+        whiteMovesCount = 0;
+        console.log("White moves count: " + whiteMovesCount)
+        blackMovesCount = 0;
+        console.log("Black moves count: " + blackMovesCount)
     }
+    else{
+        //pieces not eaten, check if piece is a pawn
+        //check if pawn
+        //if yes, reset both side's move counts
+        // if no, continue adding one
+        if (oldCell.getItem().getType() === 'pawn'){
+            whiteMovesCount = 0;
+            console.log("White moves count: " + whiteMovesCount)
+            blackMovesCount = 0;
+            console.log("Black moves count: " + blackMovesCount)
+        }
+        else{
+            //no pawns moved, move++;
+            //check for piece color before adding their 
+            if (oldCell.getItem().getColor() === 'white'){
+                whiteMovesCount++;
+            }
+            else{
+                blackMovesCount++;
+            }
+            console.log("White moves count: " + whiteMovesCount)
+            console.log("Black moves count: " + blackMovesCount)
+        }
+    }
+
     // set cells to their appropriate items
     newCell.setItem(oldCell.getItem());
     oldCell.setItem(null);
