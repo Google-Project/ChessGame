@@ -251,13 +251,10 @@ function initializeBoard(){
 
                         // if the location is a valid move (empty cell or enemy piece)
                         if (focus.containMove(cell.getLocation())){
-                            
-                            // this is specifically for the pawn (MUST BE CHANGED FOR CASTLING)
-                            if (focus.firstMove === true)
-                                focus.firstMove = false;
-
                             movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
-                            updateTracker();
+
+                            //The tracker activtes immediately if promotion phase is set to false
+                            if (!promotionPhase) updateTracker();
                             endTurn();
                             focus = null;
                         }
@@ -638,16 +635,7 @@ function displayPawnPromoSelection(cell){
 
     //adding images w/ on click function
     let color = cell.getItem().getColor();
-    //console.log(color);
 
-    /*
-        I optimized the functions a little, also looks good so far.
-        Please also add a "freeze" when a player is still choosing a 
-        selection (knight, bishop, rook, queen) for pawn promotion.
-        
-        Currently, when the pawn promotion display shows up, I can still
-        move pieces around without having to select a choice for the promotion.
-    */
     var queenButton = document.createElement('img');
     queenButton.src=`chess_models/chess_pieces/${color}-queen.png`;
     queenButton.addEventListener('click', function(){selected("queen", color, cell)});
@@ -702,4 +690,5 @@ function selected(type, color, cell){
         promotionSelection.removeChild(promotionSelection.firstChild);
     }
     promotionPhase = false;
+    updateTracker();
 }
