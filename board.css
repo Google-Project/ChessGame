@@ -181,3 +181,13 @@ h1{
     cursor: pointer;
     filter: drop-shadow(0px 0px 10px rgb(117, 145, 197));
 }
+
+#endGameDisplay{
+    padding: 10px;
+    background-color: white;
+    border-radius: 25px;
+    width: 200px;
+    height: auto;
+    text-align: center;
+    display: none;
+}
