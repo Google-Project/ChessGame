@@ -89,16 +89,14 @@ function updateTracker(){
             if (!location[key][x]) location[key][x] = {};
             if (!location[key][x][y]) location[key][x][y] = true;
 
-            //If it is white's turn, check if a hyptMove exist 
-            if (turn === 'white'){
-                piece.listMoves().forEach(function(move){
-                    let [x,y] = move;
+            //Update hypothetical moves
+            piece.listMoves().forEach(function(move){
+                let [x,y] = move;
 
-                    if (!hyptMoves[key]) hyptMoves[key] = {};
-                    if (!hyptMoves[key][x]) hyptMoves[key][x] = {};
-                    if (!hyptMoves[key][x][y]) hyptMoves[key][x][y] = true;
-                });
-            }
+                if (!hyptMoves[key]) hyptMoves[key] = {};
+                if (!hyptMoves[key][x]) hyptMoves[key][x] = {};
+                if (!hyptMoves[key][x][y]) hyptMoves[key][x][y] = true;
+            });
         })
 
         blackPiecesAlive.forEach(function(piece){
@@ -110,16 +108,14 @@ function updateTracker(){
             if (!location[key][x]) location[key][x] = {};
             if (!location[key][x][y]) location[key][x][y] = true;
 
-            //If it is white's turn, check if a hyptMove exist 
-            if (turn === 'black'){
-                piece.listMoves().forEach(function(move){
-                    let [x,y] = move;
+            //Updae hypothetical moves
+            piece.listMoves().forEach(function(move){
+                let [x,y] = move;
 
-                    if (!hyptMoves[key]) hyptMoves[key] = {};
-                    if (!hyptMoves[key][x]) hyptMoves[key][x] = {};
-                    if (!hyptMoves[key][x][y]) hyptMoves[key][x][y] = true;
-                });
-            }
+                if (!hyptMoves[key]) hyptMoves[key] = {};
+                if (!hyptMoves[key][x]) hyptMoves[key][x] = {};
+                if (!hyptMoves[key][x][y]) hyptMoves[key][x][y] = true;
+            });
         })
 
             
@@ -135,7 +131,8 @@ function positionExists(){
         let isSamePosition = true;
 
         //Checks if all white pieces' locations matches that of the current position.
-        whitePiecesAlive.forEach(function(piece){
+        for (let i=0; i<whitePiecesAlive.length; i++){
+            let piece = whitePiecesAlive[i];
             let key = 'w' + piece.getType();
             let moveArr = piece.listMoves();
             let [x,y] = piece.getLocation();
@@ -146,29 +143,30 @@ function positionExists(){
             }
             else{
                 isSamePosition = false;
+                continue;
             }
 
-            if (turn === 'white'){
-                //If it is the current player's turn, we want to also match its hypothetical moveset
-                moveArr.forEach(function(move){
-                    let [x,y] = move;
-                    //Checks if a move exists
-                    if (moveObj[key] && moveObj[key][x] && moveObj[key][x][y]){
-                        //Do Nothing
-                    }
-                    else{
-                        isSamePosition = false;
-                    }
-                })
+            //Obtain hypothetical moves for white
+            for (let i=0; i<moveArr.length; i++){
+                let [x,y] = moveArr[i];
+                //Checks if a move exists
+                if (moveObj[key] && moveObj[key][x] && moveObj[key][x][y]){
+                    //Do Nothing
+                }
+                else{
+                    isSamePosition = false;
+                    break;
+                }
             }
-        });
+        };
 
 
         //If a location/move does not match above, skip to the next position (if any)
         if (!isSamePosition) continue;
 
         //Otherwise check if all black pieces' locations/moves matches that of the current position.
-         blackPiecesAlive.forEach(function(piece){
+        for (let i=0; i<blackPiecesAlive.length; i++){
+            let piece = blackPiecesAlive[i];
             let key = 'b' + piece.getType();
             let moveArr = piece.listMoves();
             let [x,y] = piece.getLocation();
@@ -179,22 +177,22 @@ function positionExists(){
             }
             else{
                 isSamePosition = false;
+                continue;
             }
 
-            if (turn === 'black'){
-                //If it is the current player's turn, we want to also match its hypothetical moveset
-                moveArr.forEach(function(move){
-                    let [x,y] = move;
-                    //Checks if a move exists
-                    if (moveObj[key] && moveObj[key][x] && moveObj[key][x][y]){
-                        //Do Nothing
-                    }
-                    else{
-                        isSamePosition = false;
-                    }
-                })
+            //Obtain hypothetical moves for black
+            for (let i=0; i<moveArr.length; i++){
+                let [x,y] = moveArr[i];
+                //Checks if a move exists
+                if (moveObj[key] && moveObj[key][x] && moveObj[key][x][y]){
+                    //Do Nothing
+                }
+                else{
+                    isSamePosition = false;
+                    break;
+                }
             }
-        });
+        };
         
         //If a position matches, we will exit and return the index of that position.
         if (isSamePosition){
