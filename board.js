@@ -294,6 +294,24 @@ function isDrawByThreefoldRepetition(){
     return false;
 }
 
+/*
+    Conditions: https://support.chess.com/article/128-what-does-insufficient-mating-material-mean
+
+*/
+function isDrawByInsufficientMaterial(){
+    if (whitePiecesAlive.length <= 2 && blackPiecesAlive.length <= 2){
+        let wPiece = (whitePiecesAlive[0].getType() !== 'king' ? whitePiecesAlive[0] : whitePiecesAlive[1]) || null;
+        let bPiece = (blackPiecesAlive[0].getType() !== 'king' ? blackPiecesAlive[0] : blackPiecesAlive[1]) || null;
+
+        if (wPiece === null || wPiece.getType() === 'bishop' || wPiece.getType() === 'knight'){
+            if (bPiece === null || bPiece.getType() === 'bishop' || bPiece.getType() === 'knight'){
+                console.log("Draw by Insufficient Materials");
+            }
+        }
+    }
+    return false;
+}
+
 function endTurn(){
     //The tracker activtes immediately if promotion phase is set to false
     if (!promotionPhase) updateTracker();
@@ -302,7 +320,10 @@ function endTurn(){
     if (isDrawByThreefoldRepetition()){
         console.log("Draw by Threefold Repetition");
     }
-
+    else if (isDrawByInsufficientMaterial()){
+        console.log("Draw by Insufficient Materials");
+    }
+    
     //Checks for checkmate, stalemate (draw)
     //Also switches turn
     if (turn==='white'){
