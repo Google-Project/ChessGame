@@ -68,10 +68,6 @@ function updateTracker(){
     if (samePositionIndex > -1){
         console.log('matching position found');
         positionTracker[samePositionIndex][2] += 1;
-        if (positionTracker[samePositionIndex][2] === 3){
-           console.log('draw by threefold-repetition');
-           positionTracker = [];
-        }
     }
     //We have a new position
     else{
