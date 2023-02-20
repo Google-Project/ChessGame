@@ -8,7 +8,7 @@ whitePiecesAlive = [];
 blackPiecesDead = [];
 whitePiecesDead = [];
 turn = "white";
-searchDepth = 3;
+searchDepth = 4;
 
 //counter for number of moves made that are not cpatures/pawn moves
 //seperate counter for white and black, both need to reach 50 to force draw
@@ -308,11 +308,10 @@ function botMoves(){
     minimax(cellsToSelect, searchDepth, -Infinity, +Infinity, true);
     if (turn === 'white') turn = 'black';
 
-    console.log(cellsToSelect);
+    //console.log(cellsToSelect);
     if (cellsToSelect[0] !== null && cellsToSelect[1] !== null){
         movePiece(cellsToSelect[0], cellsToSelect[1]);
     }
-    console.log('bot move determined');
 }
 
 //Minimax with Alpha-Beta Pruning
@@ -328,14 +327,11 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer){
     //Maximizer (black)'s turn
     if (maximizer){
         let maxEv = -Infinity;
-        blackPiecesAlive.forEach(piece => {
+        for (let i=0; i<blackPiecesAlive.length; i++){
+            let piece = blackPiecesAlive[i];
             if (piece.getIsAlive() === true){
                 turn = 'black';
                 let hyptMoves = piece.listMoves();
-                console.log(board);
-                console.log(piece);
-                console.log(turn);
-                console.log(hyptMoves);
                 //Location of current piece before it "moves"
                 let [x,y] = piece.getLocation();
 
@@ -372,21 +368,14 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer){
 
                     //console.log('minimizer ev: ' + ev + " " + maxEv);
                     //If the minimizer's evaluation is advantageous to the bot, we update maxEv and maybe alpha
-                    if (ev >= maxEv){
-                        console.log('HYPTHETICAL MOVE SLEECTED');
-                        console.log(piece.getType());
-                        console.log(hyptMoves);
-                        console.log(blackPiecesAlive);
-                        console.log(whitePiecesAlive);
-
-                        maxEv = ev;
-                        
+                    if (ev > maxEv){
+                        maxEv = ev;              
                         //Since this response is advantageous to the bot, it is a possible candidate to move to
                         // Only update cellsToSelect when you are at the highest depth
                         if (depth === searchDepth){
+                            //console.log('current max: ' + maxEv);
                             cellsToSelect[0] = board[x][y], cellsToSelect[1] = board[x2][y2];
                         }
-                        console.log(cellsToSelect);
                     }
                     
                     //Update Alpha
@@ -405,18 +394,32 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer){
                     */
                     if (alpha >= beta) break;
                 }
+
+                 /*
+                    The moment beta is less than or equal to alpha, we won't need to continue
+                    searching in lower depths because maximizer already has a guaranteed path
+                    that is better (has higher evaluation) from what the minimizer can offer.
+
+                    Refer to the javapoint diagram:
+                    https://www.javatpoint.com/ai-alpha-beta-pruning
+            
+                    Specifically the diagram where the right subtree of node C gets cancelled out.
+                    I also included this check here instead of just in the hypothetical moves loop,
+                    to avoid unnecessary recomputation.
+                    */
+                if (alpha >= beta) break;
             }
-        })
+        }
         return maxEv;
     }
     //Minimizer (white)'s turn
     else{
         let minEv = +Infinity;
-        whitePiecesAlive.forEach(piece => {
+        for (let i=0; i<whitePiecesAlive.length; i++){
+            let piece = whitePiecesAlive[i];
             if (piece.getIsAlive() === true){
                 turn = 'white';
                 let hyptMoves = piece.listMoves();
-                console.log(hyptMoves);
                 //Location of current piece before it "moves"
                 let [x,y] = piece.getLocation();
 
@@ -452,7 +455,7 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer){
                     }
 
                     //Minimizer wants to choose the worst evaluation for maximizer
-                    if (ev <= minEv){
+                    if (ev < minEv){
                         minEv = ev;
                     }
 
@@ -460,37 +463,54 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer){
                     beta = Math.min(beta, minEv);
                     if (alpha >= beta) break;
                 }
+
+                 /*
+                    The moment beta is less than or equal to alpha, we won't need to continue
+                    searching in lower depths because maximizer already has a guaranteed path
+                    that is better (has higher evaluation) from what the minimizer can offer.
+
+                    Refer to the javapoint diagram:
+                    https://www.javatpoint.com/ai-alpha-beta-pruning
+            
+                    Specifically the diagram where the right subtree of node C gets cancelled out.
+                    I also included this check here instead of just in the hypothetical moves loop,
+                    to avoid unnecessary recomputation.
+                */
+                if (alpha >= beta) break;
             }
-        })
+        }
         return minEv;
     }
 }
 
 //Calculates static evaluation of current hypothetical board
+//We will try seeing if the net evaluation (black's position - white's position) is better or worse
+//We do (black - white) because black wants to maximize its chance of getting the highest evaluation
+//while white wants to minimize black's evaluation
 function evaluateBoard(){
-    var ev = 0;
-    // whitePiecesAlive.forEach(piece => {
-    //     let [x,y] = piece.getLocation();
-    //     if (piece.getType() === 'pawn') ev +=  wPawnEv[x][y];
-    //     if (piece.getType() === 'knight') ev +=  wKnightEv[x][y];
-    //     if (piece.getType() === 'bishop') ev +=  wBishopEv[x][y];
-    //     if (piece.getType() === 'rook') ev +=  wRookEv[x][y];
-    //     if (piece.getType() === 'king') ev +=  wKingMidEv[x][y];
-    //     if (piece.getType() === 'queen') ev +=  wQueenEv[x][y];
-    // })
+    var whiteEv = 0;
+    whitePiecesAlive.forEach(piece => {
+        let [x,y] = piece.getLocation();
+        if (piece.getType() === 'pawn') whiteEv +=  wPawnEv[x][y];
+        if (piece.getType() === 'knight') whiteEv +=  wKnightEv[x][y];
+        if (piece.getType() === 'bishop') whiteEv +=  wBishopEv[x][y];
+        if (piece.getType() === 'rook') whiteEv +=  wRookEv[x][y];
+        if (piece.getType() === 'king') whiteEv +=  wKingMidEv[x][y];
+        if (piece.getType() === 'queen') whiteEv +=  wQueenEv[x][y];
+    })
    
+    var blackEv = 0;
     blackPiecesAlive.forEach(piece => {
         let [x,y] = piece.getLocation();
-        if (piece.getType() === 'pawn') ev +=  bPawnEv[x][y];
-        if (piece.getType() === 'knight') ev +=  bKnightEv[x][y];
-        if (piece.getType() === 'bishop') ev +=  bBishopEv[x][y];
-        if (piece.getType() === 'rook') ev +=  bRookEv[x][y];
-        if (piece.getType() === 'king') ev +=  bKingMidEv[x][y];
-        if (piece.getType() === 'queen') ev +=  bQueenEv[x][y];
+        if (piece.getType() === 'pawn') blackEv +=  bPawnEv[x][y];
+        if (piece.getType() === 'knight') blackEv +=  bKnightEv[x][y];
+        if (piece.getType() === 'bishop') blackEv +=  bBishopEv[x][y];
+        if (piece.getType() === 'rook') blackEv +=  bRookEv[x][y];
+        if (piece.getType() === 'king') blackEv +=  bKingMidEv[x][y];
+        if (piece.getType() === 'queen') blackEv +=  bQueenEv[x][y];
     })
 
-    //console.log("Evaluation = " + ev);
-    return ev;
+    return (blackEv - whiteEv);
 }
 
 function isDrawByThreefoldRepetition(){
@@ -529,11 +549,11 @@ function isDrawByInsufficientMaterial(){
 
         if (wPiece === null || wPiece.getType() === 'bishop' || wPiece.getType() === 'knight'){
             //White has double knights and black has lone king, then draw.
-            if (wPiece.getType() === 'knight' && wPieceTwo && wPieceTwo.getType() === 'knight'){
+            if (wPieceTwo && wPieceTwo.getType() === 'knight' && wPiece.getType() === 'knight'){
                 if (bPiece === null) isDraw = true;
             }
             //Black has double knights and white has lone king, then draw.
-            else if (bPiece.getType() === 'knight' && bPieceTwo && bPieceTwo.getType() === 'knight'){
+            else if (bPieceTwo && bPieceTwo.getType() === 'knight' && bPiece.getType() === 'knight'){
                 if (wPiece === null) isDraw = true;
             }
             //White has a lone king or two pieces either a bishop or knight and a king
