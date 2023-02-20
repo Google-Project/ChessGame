@@ -8,6 +8,7 @@ whitePiecesAlive = [];
 blackPiecesDead = [];
 whitePiecesDead = [];
 turn = "white";
+searchDepth = 3;
 
 //counter for number of moves made that are not cpatures/pawn moves
 //seperate counter for white and black, both need to reach 50 to force draw
@@ -304,7 +305,6 @@ function initializeBoard(){
 //The AI's turn
 function botMoves(){
     var cellsToSelect = [null, null]; //This will be populated when it selects the cells
-    var searchDepth = 3;
     minimax(cellsToSelect, searchDepth, -Infinity, +Infinity, true);
     if (turn === 'white') turn = 'black';
 
@@ -382,7 +382,10 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer){
                         maxEv = ev;
                         
                         //Since this response is advantageous to the bot, it is a possible candidate to move to
-                        cellsToSelect[0] = board[x][y], cellsToSelect[1] = board[x2][y2];
+                        // Only update cellsToSelect when you are at the highest depth
+                        if (depth === searchDepth){
+                            cellsToSelect[0] = board[x][y], cellsToSelect[1] = board[x2][y2];
+                        }
                         console.log(cellsToSelect);
                     }
                     
