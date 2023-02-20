@@ -302,12 +302,19 @@ function initializeBoard(){
 }
 
 //The AI's turn
+var c1 = null;
+var c2 = null;
+
 function botMoves(){
-    var cellsToSelect = [null, null]; //This will be populated when it selects the cells
+    c1 = null;
+    c2 = null;
+    var cellsToSelect = []; //This will be populated when it selects the cells
     var searchDepth = 3;
     minimax(cellsToSelect, searchDepth, -Infinity, +Infinity, true);
     if (turn === 'white') turn = 'black';
 
+    console.log(c1, c2);    
+    console.log(cellsToSelect[0]);
     console.log(cellsToSelect);
     if (cellsToSelect[0] !== null && cellsToSelect[1] !== null){
         movePiece(cellsToSelect[0], cellsToSelect[1]);
@@ -324,6 +331,10 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer){
         //Evaluate the alive chess pieces on board
         return evaluateBoard();
     }
+    else if (isDrawByInsufficientMaterial()){
+        console.log('INSUFFICIENT MATERIALS');
+        return evaluateBoard();
+    }
 
     //Maximizer (black)'s turn
     if (maximizer){
@@ -332,10 +343,6 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer){
             if (piece.getIsAlive() === true){
                 turn = 'black';
                 let hyptMoves = piece.listMoves();
-                console.log(board);
-                console.log(piece);
-                console.log(turn);
-                console.log(hyptMoves);
                 //Location of current piece before it "moves"
                 let [x,y] = piece.getLocation();
 
@@ -345,45 +352,66 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer){
                     let [x2,y2] = hyptMoves[i];
                     let possiblePiece = board[x2][y2].getItem();
 
+                    let oldCell = board[x][y];
+                    let newCell = board[x2][y2];
+
                     //Assume the new cell's piece isn't there for now 
                     if (possiblePiece){
+                        //console.log('setting isAlive!');
                         possiblePiece.setIsAlive(false);
                     }
 
                     //"Move" to the new cell to enter next state
-                    board[x2][y2].setItem(board[x][y].getItem());
-                    board[x2][y2].getItem().setLocation([x2,y2]);
-                    board[x][y].setItem(null);
+                    newCell.setItem(piece);
+                    // console.log('starting location: ' + x,y);
+                    // console.log('the old king location: ' + piece.getLocation());
+
+                    piece.setLocation(board[x2][y2].getLocation());
+                    // console.log('the king new location: ' + piece.getLocation());
+                    oldCell.setItem(null);
 
                     //After "moving", we go to the next state
                     //This is the minimizer's evaluation.
                     let ev = minimax(cellsToSelect, depth-1, alpha, beta, false);
+                    // console.log('king location immediately after minimaxed: ' + piece.getLocation());
 
                     //We also need to restore the state from the earlier move
-                    board[x][y].setItem(board[x2][y2].getItem());
-                    board[x][y].getItem().setLocation([x,y]);
-                    board[x2][y2].setItem(null);
+                    // console.log(x,y, x2,y2);
+                    piece.setLocation(oldCell.getLocation());
+                    oldCell.setItem(piece);
+                    newCell.setItem(null);
+                    //console.log('king location after minimaxed: ' + piece.getLocation());
 
+                    if (oldCell.getItem() === null){
+                        console.log('cell is null');
+                    }
                     if (possiblePiece){
                         possiblePiece.setIsAlive(true);
-                        board[x2][y2].setItem(possiblePiece);
-                        board[x2][y2].getItem().setLocation([x2,y2])
+                        possiblePiece.setLocation(newCell.getLocation());
+                        newCell.setItem(possiblePiece);
                     }
 
+                    //console.log('king location after minimaxed Two: ' + piece.getLocation())
                     //console.log('minimizer ev: ' + ev + " " + maxEv);
                     //If the minimizer's evaluation is advantageous to the bot, we update maxEv and maybe alpha
                     if (ev >= maxEv){
-                        console.log('HYPTHETICAL MOVE SLEECTED');
-                        console.log(piece.getType());
-                        console.log(hyptMoves);
-                        console.log(blackPiecesAlive);
-                        console.log(whitePiecesAlive);
-
                         maxEv = ev;
-                        
+                        //debugger;
+                        // console.log(x,y);
+                        // console.log(piece); 
+                        // console.log(piece.location);
+                        // console.log(piece.getLocation());
+                        // console.log(board[x][y]);
+                        // console.log(board[x][y].item);
                         //Since this response is advantageous to the bot, it is a possible candidate to move to
-                        cellsToSelect[0] = board[x][y], cellsToSelect[1] = board[x2][y2];
-                        console.log(cellsToSelect);
+                        cellsToSelect = [];
+                        cellsToSelect.push(board[x][y]);
+                        //console.log(cellsToSelect[0].item);
+                        cellsToSelect.push(board[x2][y2]);
+                        //console.log(cellsToSelect);
+
+                        c1 = board[x][y];
+                        c2 = board[x2][y2];
                     }
                     
                     //Update Alpha
@@ -404,6 +432,8 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer){
                 }
             }
         })
+
+        console.log(cellsToSelect);
         return maxEv;
     }
     //Minimizer (white)'s turn
@@ -412,8 +442,7 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer){
         whitePiecesAlive.forEach(piece => {
             if (piece.getIsAlive() === true){
                 turn = 'white';
-                let hyptMoves = await piece.listMoves();
-                console.log(hyptMoves);
+                let hyptMoves = piece.listMoves();
                 //Location of current piece before it "moves"
                 let [x,y] = piece.getLocation();
 
@@ -429,24 +458,28 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer){
                         possiblePiece.setIsAlive(false);
                     }
 
-                    board[x2][y2].setItem(board[x][y].getItem());
-                    board[x2][y2].getItem().setLocation([x2,y2]);
-                    board[x][y].setItem(null);
+                     //"Move" to the new cell to enter next state
+                     piece.setLocation(board[x2][y2].getLocation());
+                     board[x2][y2].setItem(piece);
+                     board[x][y].setItem(null);
 
                     //After "moving", we go to the next state
                     //This is the minimizer's evaluation.
                     let ev = minimax(cellsToSelect, depth-1, alpha, beta, true);
 
-                    //We also need to restore the state from the earlier move
-                    board[x][y].setItem(board[x2][y2].getItem());
-                    board[x][y].getItem().setLocation([x,y]);
-                    board[x2][y2].setItem(null);
-
-                    if (possiblePiece){
-                        possiblePiece.setIsAlive(true);
-                        board[x2][y2].setItem(possiblePiece);
-                        board[x2][y2].getItem().setLocation([x2,y2])
+                     //We also need to restore the state from the earlier move
+                     piece.setLocation(board[x][y].getLocation());
+                     board[x][y].setItem(piece);
+                     board[x2][y2].setItem(null);
+ 
+                     if (board[x][y].getItem() === null){
+                        console.log('cell is null');
                     }
+                     if (possiblePiece){
+                         possiblePiece.setIsAlive(true);
+                         possiblePiece.setLocation(board[x2][y2].getLocation());
+                         board[x2][y2].setItem(possiblePiece);
+                     }
 
                     //Minimizer wants to choose the worst evaluation for maximizer
                     if (ev <= minEv){
@@ -459,6 +492,8 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer){
                 }
             }
         })
+
+        //console.log(cellsToSelect);
         return minEv;
     }
 }
@@ -504,10 +539,22 @@ function isDrawByThreefoldRepetition(){
 */
 function isDrawByInsufficientMaterial(){
     var isDraw = false;
-    if (whitePiecesAlive.length <= 3 && blackPiecesAlive.length <= 3){
+
+    //Stores pieces with isAlive = true in order for minimax to access this correctly.
+    var wPieces = [];
+    var bPieces = [];
+
+    whitePiecesAlive.forEach(piece => {
+        if (piece.getIsAlive() === true) wPieces.push(piece);
+    })
+    blackPiecesAlive.forEach(piece => {
+        if (piece.getIsAlive() === true) wPieces.push(piece);
+    })
+
+    if (wPieces.length <= 3 && bPieces.length <= 3){
         let wPiece = null;
         let wPieceTwo = null;
-        whitePiecesAlive.forEach(function(piece){
+        wPieces.forEach(function(piece){
             if (piece.getType() !== 'king'){
                 if (wPiece === null) wPiece = piece;
                 else if (wPieceTwo === null) wPieceTwo = piece;
@@ -517,7 +564,7 @@ function isDrawByInsufficientMaterial(){
       
         let bPiece = null;
         let bPieceTwo = null;
-        blackPiecesAlive.forEach(function(piece){
+        bPieces.forEach(function(piece){
             if (piece.getType() !== 'king'){
                 if (bPiece === null) bPiece = piece;
                 else if (bPieceTwo === null) bPieceTwo = piece;
@@ -526,11 +573,11 @@ function isDrawByInsufficientMaterial(){
 
         if (wPiece === null || wPiece.getType() === 'bishop' || wPiece.getType() === 'knight'){
             //White has double knights and black has lone king, then draw.
-            if (wPiece.getType() === 'knight' && wPieceTwo && wPieceTwo.getType() === 'knight'){
+            if (wPieceTwo && wPiece.getType() === 'knight' && wPieceTwo.getType() === 'knight'){
                 if (bPiece === null) isDraw = true;
             }
             //Black has double knights and white has lone king, then draw.
-            else if (bPiece.getType() === 'knight' && bPieceTwo && bPieceTwo.getType() === 'knight'){
+            else if (bPieceTwo && bPieceTwo.getType() === 'knight' && bPiece.getType() === 'knight'){
                 if (wPiece === null) isDraw = true;
             }
             //White has a lone king or two pieces either a bishop or knight and a king
@@ -842,37 +889,18 @@ function initializePiece(location, color, type){
 
 
 function initializeModels(){
-    //Pawns
-    for (let c=0; c<board[1].length; c++){
-        initializePiece([1,c], 'black', 'pawn');
-        initializePiece([6,c], 'white', 'pawn');
-    }
 
-    //Rooks
-    initializePiece(board[0][0].getLocation(), 'black', 'rook');
-    initializePiece(board[0][7].getLocation(), 'black', 'rook');
-    initializePiece(board[7][0].getLocation(), 'white', 'rook');
-    initializePiece(board[7][7].getLocation(), 'white', 'rook');
 
-    //Knights
-    initializePiece(board[0][1].getLocation(), 'black', 'knight');
-    initializePiece(board[0][6].getLocation(), 'black', 'knight');
-    initializePiece(board[7][1].getLocation(), 'white', 'knight');
-    initializePiece(board[7][6].getLocation(), 'white', 'knight');
 
     //Bishops
-    initializePiece(board[0][2].getLocation(), 'black', 'bishop');
-    initializePiece(board[0][5].getLocation(), 'black', 'bishop');
-    initializePiece(board[7][2].getLocation(), 'white', 'bishop');
-    initializePiece(board[7][5].getLocation(), 'white', 'bishop');
+    initializePiece(board[1][3].getLocation(), 'black', 'bishop');
+
 
     //Kings
     initializePiece(board[0][4].getLocation(), 'black', 'king');
     initializePiece(board[7][4].getLocation(), 'white', 'king');
+    initializePiece(board[7][0].getLocation(), 'white', 'queen');
 
-    //Queens
-    initializePiece(board[0][3].getLocation(), 'black', 'queen');
-    initializePiece(board[7][3].getLocation(), 'white', 'queen');
 }
 
 function startTimer(){
