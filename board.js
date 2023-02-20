@@ -258,9 +258,9 @@ function initializeBoard(){
                             // if the location is a valid move (empty cell or enemy piece)
                             if (focus.containMove(cell.getLocation())){
                                 movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
-                                endTurn();
+                                if (!promotionPhase) endTurn();
                                 //The AI moves
-                                if (!gameEnded && turn === 'black'){
+                                if (!gameEnded && !promotionPhase && turn === 'black'){
                                     botMoves();
                                     endTurn();
                                 }
@@ -1013,6 +1013,11 @@ function displayPawnPromoSelection(cell){
     promotionSelection.appendChild(rookButton);
     promotionSelection.appendChild(bishopButton);
     promotionSelection.appendChild(knightButton);
+
+    //The AI chooses queen (for now) as promotion. Since AI can't click, we need to help it.
+    if (turn === 'black'){
+        selected("queen", color, cell);
+    }
 }
 
 
@@ -1048,6 +1053,13 @@ function selected(type, color, cell){
     }
     promotionPhase = false;
     updateTracker();
+    endTurn();
+
+    //The bot cannot move until promotion phase ends for white
+    if (turn === 'black'){
+        botMoves();
+        endTurn();
+    }
 }
 
 function displayGameEnded(condition){
