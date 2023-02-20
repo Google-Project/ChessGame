@@ -415,7 +415,7 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer){
         whitePiecesAlive.forEach(piece => {
             if (piece.getIsAlive() === true){
                 turn = 'white';
-                let hyptMoves = await piece.listMoves();
+                let hyptMoves = piece.listMoves();
                 console.log(hyptMoves);
                 //Location of current piece before it "moves"
                 let [x,y] = piece.getLocation();
