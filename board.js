@@ -318,6 +318,12 @@ function botMoves(){
 function minimax(cellsToSelect, depth, alpha, beta, maximizer){
     /*
         Base Cases: Evaluate the static evaluations and return it
+        Other cases to consider:
+        1. Stalemate
+        2. Checkmate
+        3. ... 
+        
+        The main one is really checkmate, others not so much.
     */  
     if (depth === 0){
         //Evaluate the alive chess pieces on board
@@ -335,15 +341,50 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer){
                 //Location of current piece before it "moves"
                 let [x,y] = piece.getLocation();
 
+
                 //Try out each hypothetical move
                 for (let i=0; i<hyptMoves.length; i++){
                     //Location of the new cell before the current piece "moves" to it
                     let [x2,y2] = hyptMoves[i];
                     let possiblePiece = board[x2][y2].getItem();
+                    let rightEnPassantCell = null, leftEnPassantCell = null, enPassantedPiece = null;
+
+                    //Check for special case, en passant capture
+                    if (captureByEnPassant(board[x][y], board[x2][y2], piece)){
+                        //Either the adjacent left pawn (if exists) or right pawn (if exists) is captured
+
+                        //left
+                        if (isInBoard([x-1, y]) && !isEmptyAtLocation([x-1, y]) && !piece.isSameTeamAtLocation([x-1, y])){
+                            if (board[x-1][y].getItem().getType() === 'pawn' && board[x-1][y].getItem().displacementOfTwo){
+                                leftEnPassantCell = board[x-1][y];
+                            }
+                        }
+
+                        //right
+                        if (isInBoard([x+1, y]) && !isEmptyAtLocation([x+1, y]) && !piece.isSameTeamAtLocation([x+1, y])){
+                            if (board[x+1][y].getItem().getType() === 'pawn' && board[x+1][y].getItem().displacementOfTwo){
+                                rightEnPassantCell = board[x+1][y];
+                            }
+                        }
+                    }
 
                     //Assume the new cell's piece isn't there for now 
                     if (possiblePiece){
                         possiblePiece.setIsAlive(false);
+                    }
+
+                    //Enpassants: we also assume the enpassantCaptured pawn isn't there (will be restored)
+                    if (rightEnPassantCell || leftEnPassantCell){
+                        if (rightEnPassantCell){
+                            enPassantedPiece = rightEnPassantCell.getItem();
+                            enPassantedPiece.setIsAlive(false);
+                            rightEnPassantCell.setItem(null);
+                        }
+                        if (leftEnPassantCell){
+                            enPassantedPiece = leftEnPassantCell.getItem();
+                            enPassantedPiece.setIsAlive(false);
+                            leftEnPassantCell.setItem(null);
+                        }
                     }
 
                     //"Move" to the new cell to enter next state
@@ -360,24 +401,37 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer){
                     board[x][y].getItem().setLocation([x,y]);
                     board[x2][y2].setItem(null);
 
+                    //Restore a null piece or a valid piece to its original location
                     if (possiblePiece){
-                        possiblePiece.setIsAlive(true);
-                        board[x2][y2].setItem(possiblePiece);
-                        board[x2][y2].getItem().setLocation([x2,y2])
+                         possiblePiece.setIsAlive(true);
+                         board[x2][y2].setItem(possiblePiece);
+                         board[x2][y2].getItem().setLocation([x2,y2])
+                    }
+
+                    //Restore any enPassantcaptured piece to its original location
+                    if (rightEnPassantCell || leftEnPassantCell){
+                        if (rightEnPassantCell){
+                            rightEnPassantCell.setItem(enPassantedPiece);
+                            enPassantedPiece.setIsAlive(true);
+                        }
+                        if (leftEnPassantCell){
+                            leftEnPassantCell.setItem(enPassantedPiece);
+                            enPassantedPiece.setIsAlive(true);
+                        }
                     }
 
                     //console.log('minimizer ev: ' + ev + " " + maxEv);
                     //If the minimizer's evaluation is advantageous to the bot, we update maxEv and maybe alpha
                     if (ev > maxEv){
-                        maxEv = ev;              
-                        //Since this response is advantageous to the bot, it is a possible candidate to move to
-                        // Only update cellsToSelect when you are at the highest depth
-                        if (depth === searchDepth){
-                            //console.log('current max: ' + maxEv);
-                            cellsToSelect[0] = board[x][y], cellsToSelect[1] = board[x2][y2];
-                        }
+                         maxEv = ev;              
+                         //Since this response is advantageous to the bot, it is a possible candidate to move to
+                         // Only update cellsToSelect when you are at the highest depth
+                         if (depth === searchDepth){
+                             //console.log('current max: ' + maxEv);
+                             cellsToSelect[0] = board[x][y], cellsToSelect[1] = board[x2][y2];
+                         }
                     }
-                    
+
                     //Update Alpha
                     alpha = Math.max(alpha, maxEv);
 
@@ -393,22 +447,22 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer){
                         why we do if (alpha >= beta) break;
                     */
                     if (alpha >= beta) break;
+
+                    /*
+                        The moment beta is less than or equal to alpha, we won't need to continue
+                        searching in lower depths because maximizer already has a guaranteed path
+                        that is better (has higher evaluation) from what the minimizer can offer.
+
+                        Refer to the javapoint diagram:
+                        https://www.javatpoint.com/ai-alpha-beta-pruning
+                    
+                        Specifically the diagram where the right subtree of node C gets cancelled out.
+                        I also included this check here instead of just in the hypothetical moves loop,
+                        to avoid unnecessary recomputation.
+                        */
                 }
-
-                 /*
-                    The moment beta is less than or equal to alpha, we won't need to continue
-                    searching in lower depths because maximizer already has a guaranteed path
-                    that is better (has higher evaluation) from what the minimizer can offer.
-
-                    Refer to the javapoint diagram:
-                    https://www.javatpoint.com/ai-alpha-beta-pruning
-            
-                    Specifically the diagram where the right subtree of node C gets cancelled out.
-                    I also included this check here instead of just in the hypothetical moves loop,
-                    to avoid unnecessary recomputation.
-                    */
-                if (alpha >= beta) break;
             }
+            if (alpha >= beta) break;
         }
         return maxEv;
     }
@@ -422,19 +476,53 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer){
                 let hyptMoves = piece.listMoves();
                 //Location of current piece before it "moves"
                 let [x,y] = piece.getLocation();
-
+                
                 //Try out each hypothetical move
                 for (let i=0; i<hyptMoves.length; i++){
                     //Location of the new cell before the current piece "moves" to it
                     let [x2,y2] = hyptMoves[i];
                     let possiblePiece = board[x2][y2].getItem();
-                    
-                    //"Move" to the new cell to enter next state
+                    let rightEnPassantCell = null, leftEnPassantCell = null, enPassantedPiece = null;
+
+                    //Check for special case, en passant capture
+                    if (captureByEnPassant(board[x][y], board[x2][y2], piece)){
+                        //Either the adjacent left pawn (if exists) or right pawn (if exists) is captured
+
+                        //left
+                        if (isInBoard([x-1, y]) && !isEmptyAtLocation([x-1, y]) && !piece.isSameTeamAtLocation([x-1, y])){
+                            if (board[x-1][y].getItem().getType() === 'pawn' && board[x-1][y].getItem().displacementOfTwo){
+                                leftEnPassantCell = board[x-1][y];
+                            }
+                        }
+
+                        //right
+                        if (isInBoard([x+1, y]) && !isEmptyAtLocation([x+1, y]) && !piece.isSameTeamAtLocation([x+1, y])){
+                            if (board[x+1][y].getItem().getType() === 'pawn' && board[x+1][y].getItem().displacementOfTwo){
+                                rightEnPassantCell = board[x+1][y];
+                            }
+                        }
+                    }
+
+                    //Assume the piece isn't there
                     if (possiblePiece){
-                        //Assume the new cell's piece isn't there for now 
                         possiblePiece.setIsAlive(false);
                     }
 
+                    //Enpassants: we also assume the enpassantCaptured pawn isn't there (will be restored)
+                      if (rightEnPassantCell || leftEnPassantCell){
+                        if (rightEnPassantCell){
+                            enPassantedPiece = rightEnPassantCell.getItem();
+                            enPassantedPiece.setIsAlive(false);
+                            rightEnPassantCell.setItem(null);
+                        }
+                        if (leftEnPassantCell){
+                            enPassantedPiece = leftEnPassantCell.getItem();
+                            enPassantedPiece.setIsAlive(false);
+                            leftEnPassantCell.setItem(null);
+                        }
+                    }
+
+                    //"Move" to the new cell
                     board[x2][y2].setItem(board[x][y].getItem());
                     board[x2][y2].getItem().setLocation([x2,y2]);
                     board[x][y].setItem(null);
@@ -448,10 +536,23 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer){
                     board[x][y].getItem().setLocation([x,y]);
                     board[x2][y2].setItem(null);
 
+                    //Restore a null piece or a valid piece to its original location
                     if (possiblePiece){
                         possiblePiece.setIsAlive(true);
                         board[x2][y2].setItem(possiblePiece);
                         board[x2][y2].getItem().setLocation([x2,y2])
+                    }
+
+                    //Restore any enPassantcaptured piece to its original location
+                     if (rightEnPassantCell || leftEnPassantCell){
+                        if (rightEnPassantCell){
+                            rightEnPassantCell.setItem(enPassantedPiece);
+                            enPassantedPiece.setIsAlive(true);
+                        }
+                        if (leftEnPassantCell){
+                            leftEnPassantCell.setItem(enPassantedPiece);
+                            enPassantedPiece.setIsAlive(true);
+                        }
                     }
 
                     //Minimizer wants to choose the worst evaluation for maximizer
