@@ -1,3 +1,3 @@
 # ChessGame
 
-Link to [Chess Game] (https://google-project.github.io/ChessGame/board.html)
+Link to [Chess Game](https://google-project.github.io/ChessGame/board.html)
