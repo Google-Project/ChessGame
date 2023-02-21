@@ -3,12 +3,14 @@ body{
 }
 
 .back{
-    margin-top: 50px;
+    position: absolute;
+    z-index: 1;
+    margin: 50px;
     background-color: rgb(241, 241, 241);
     width: 450px;
     height: 800px;
-    margin-right: auto;
-    margin-left: auto;
+    margin-right: 100px;
+    margin-left: 35%;
     border-radius: 20px;
 }
 
@@ -44,16 +46,21 @@ body{
     margin-right: 10px;
 }
 
-#aquiredPeices{
+#acquiredPieces{
     width: 50%;
     height: 40px;
     border-radius: 10px;
     float: left;
-    background-color: rgb(255, 255, 255, .2);
     margin-top: 5px;
     margin-left: 10px;
     display: flex;
 
+}
+
+#acquiredPieces img{
+    padding: 2px;
+    width: 15px;
+    height: 18px;
 }
 
 .chess-board{
@@ -122,17 +129,21 @@ body{
     margin-left: 10px;
 }
 
-#playerAquiredPeices{
-    width: 50%;
+#playerAcquiredPieces{
     height: 40px;
     border-radius: 10px;
     float: right;
-    background-color: rgb(255, 255, 255, .2);
     margin-top: 5px;
     margin-right: 10px;
     display: flex;
-
 }
+
+#playerAcquiredPieces img{
+    padding: 2px;
+    width: 15px;
+    height: 18px;
+}
+
 
 h1{
     text-align: center;
@@ -153,6 +164,10 @@ h1{
 }
 
 #ChoiceDisplay{
+    position: absolute;
+    z-index: 2;
+    margin-top: 375px;
+    margin-left: 40%;
     display: none;
 }
 
@@ -183,6 +198,10 @@ h1{
 }
 
 #endGameDisplay{
+    position: absolute;
+    z-index: 2;
+    margin-top: 375px;
+    margin-left: 40%;
     padding: 10px;
     background-color: white;
     border-radius: 25px;
