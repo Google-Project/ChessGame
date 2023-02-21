@@ -8,6 +8,7 @@ whitePiecesAlive = [];
 blackPiecesDead = [];
 whitePiecesDead = [];
 turn = "white";
+searchDepth = 4;
 
 //counter for number of moves made that are not cpatures/pawn moves
 //seperate counter for white and black, both need to reach 50 to force draw
@@ -76,12 +77,10 @@ function updateTracker(){
 
     //We have a matching position
     if (samePositionIndex > -1){
-        console.log('matching position found');
         positionTracker[samePositionIndex][2] += 1;
     }
     //We have a new position
     else{
-        console.log('new position found');
         let location = {};
         let hyptMoves = {};
         let counter = 1;
@@ -259,7 +258,12 @@ function initializeBoard(){
                             // if the location is a valid move (empty cell or enemy piece)
                             if (focus.containMove(cell.getLocation())){
                                 movePiece(board[focus.getLocation()[0]][focus.getLocation()[1]], cell);
-                                endTurn();
+                                if (!promotionPhase) endTurn();
+                                //The AI moves
+                                if (!gameEnded && !promotionPhase && turn === 'black'){
+                                    botMoves();
+                                    endTurn();
+                                }
                                 focus = null;
                             }
     
@@ -298,6 +302,318 @@ function initializeBoard(){
     }
 }
 
+//The AI's turn
+function botMoves(){
+    var cellsToSelect = [null, null]; //This will be populated when it selects the cells
+    minimax(cellsToSelect, searchDepth, -Infinity, +Infinity, true);
+    if (turn === 'white') turn = 'black';
+
+    //console.log(cellsToSelect);
+    if (cellsToSelect[0] !== null && cellsToSelect[1] !== null){
+        movePiece(cellsToSelect[0], cellsToSelect[1]);
+    }
+}
+
+//Minimax with Alpha-Beta Pruning
+function minimax(cellsToSelect, depth, alpha, beta, maximizer){
+    /*
+        Base Cases: Evaluate the static evaluations and return it
+        Other cases to consider:
+        1. Stalemate
+        2. Checkmate
+        3. ... 
+        
+        The main one is really checkmate, others not so much.
+    */  
+    if (depth === 0){
+        //Evaluate the alive chess pieces on board
+        return evaluateBoard();
+    }
+
+    //Maximizer (black)'s turn
+    if (maximizer){
+        let maxEv = -Infinity;
+        for (let i=0; i<blackPiecesAlive.length; i++){
+            let piece = blackPiecesAlive[i];
+            if (piece.getIsAlive() === true){
+                turn = 'black';
+                let hyptMoves = piece.listMoves();
+                //Location of current piece before it "moves"
+                let [x,y] = piece.getLocation();
+
+
+                //Try out each hypothetical move
+                for (let i=0; i<hyptMoves.length; i++){
+                    //Location of the new cell before the current piece "moves" to it
+                    let [x2,y2] = hyptMoves[i];
+                    let possiblePiece = board[x2][y2].getItem();
+                    let rightEnPassantCell = null, leftEnPassantCell = null, enPassantedPiece = null;
+
+                    //Check for special case, en passant capture
+                    if (captureByEnPassant(board[x][y], board[x2][y2], piece)){
+                        //Either the adjacent left pawn (if exists) or right pawn (if exists) is captured
+
+                        //left
+                        if (isInBoard([x-1, y]) && !isEmptyAtLocation([x-1, y]) && !piece.isSameTeamAtLocation([x-1, y])){
+                            if (board[x-1][y].getItem().getType() === 'pawn' && board[x-1][y].getItem().displacementOfTwo){
+                                leftEnPassantCell = board[x-1][y];
+                            }
+                        }
+
+                        //right
+                        if (isInBoard([x+1, y]) && !isEmptyAtLocation([x+1, y]) && !piece.isSameTeamAtLocation([x+1, y])){
+                            if (board[x+1][y].getItem().getType() === 'pawn' && board[x+1][y].getItem().displacementOfTwo){
+                                rightEnPassantCell = board[x+1][y];
+                            }
+                        }
+                    }
+
+                    //Assume the new cell's piece isn't there for now 
+                    if (possiblePiece){
+                        possiblePiece.setIsAlive(false);
+                    }
+
+                    //Enpassants: we also assume the enpassantCaptured pawn isn't there (will be restored)
+                    if (rightEnPassantCell || leftEnPassantCell){
+                        if (rightEnPassantCell){
+                            enPassantedPiece = rightEnPassantCell.getItem();
+                            enPassantedPiece.setIsAlive(false);
+                            rightEnPassantCell.setItem(null);
+                        }
+                        if (leftEnPassantCell){
+                            enPassantedPiece = leftEnPassantCell.getItem();
+                            enPassantedPiece.setIsAlive(false);
+                            leftEnPassantCell.setItem(null);
+                        }
+                    }
+
+                    //"Move" to the new cell to enter next state
+                    board[x2][y2].setItem(board[x][y].getItem());
+                    board[x2][y2].getItem().setLocation([x2,y2]);
+                    board[x][y].setItem(null);
+
+                    //After "moving", we go to the next state
+                    //This is the minimizer's evaluation.
+                    let ev = minimax(cellsToSelect, depth-1, alpha, beta, false);
+
+                    //We also need to restore the state from the earlier move
+                    board[x][y].setItem(board[x2][y2].getItem());
+                    board[x][y].getItem().setLocation([x,y]);
+                    board[x2][y2].setItem(null);
+
+                    //Restore a null piece or a valid piece to its original location
+                    if (possiblePiece){
+                         possiblePiece.setIsAlive(true);
+                         board[x2][y2].setItem(possiblePiece);
+                         board[x2][y2].getItem().setLocation([x2,y2])
+                    }
+
+                    //Restore any enPassantcaptured piece to its original location
+                    if (rightEnPassantCell || leftEnPassantCell){
+                        if (rightEnPassantCell){
+                            rightEnPassantCell.setItem(enPassantedPiece);
+                            enPassantedPiece.setIsAlive(true);
+                        }
+                        if (leftEnPassantCell){
+                            leftEnPassantCell.setItem(enPassantedPiece);
+                            enPassantedPiece.setIsAlive(true);
+                        }
+                    }
+
+                    //console.log('minimizer ev: ' + ev + " " + maxEv);
+                    //If the minimizer's evaluation is advantageous to the bot, we update maxEv and maybe alpha
+                    if (ev > maxEv){
+                         maxEv = ev;              
+                         //Since this response is advantageous to the bot, it is a possible candidate to move to
+                         // Only update cellsToSelect when you are at the highest depth
+                         if (depth === searchDepth){
+                             //console.log('current max: ' + maxEv);
+                             cellsToSelect[0] = board[x][y], cellsToSelect[1] = board[x2][y2];
+                         }
+                    }
+
+                    //Update Alpha
+                    alpha = Math.max(alpha, maxEv);
+
+                    //Alpha-Beta Pruning
+                    /*
+                        If the maximizer can already choose a path that leads to an evaluation of +5 (alpha), then beta will pick the 
+                        lowest evaluation for alpha. Assume minimizer sees an evaluation of +1:
+                            a) Either the +1 is the lowest evaluation or
+                            b) There is a lower evaluation that +1, like -10. 
+
+                        In either case, it doesn't matter since maximizer can already choose a path with evaluation +5,
+                        so no matter what minimizer does it cannot prevent maximizer from choosing the better path, hence
+                        why we do if (alpha >= beta) break;
+                    */
+                    if (alpha >= beta) break;
+
+                    /*
+                        The moment beta is less than or equal to alpha, we won't need to continue
+                        searching in lower depths because maximizer already has a guaranteed path
+                        that is better (has higher evaluation) from what the minimizer can offer.
+
+                        Refer to the javapoint diagram:
+                        https://www.javatpoint.com/ai-alpha-beta-pruning
+                    
+                        Specifically the diagram where the right subtree of node C gets cancelled out.
+                        I also included this check here instead of just in the hypothetical moves loop,
+                        to avoid unnecessary recomputation.
+                        */
+                }
+            }
+            if (alpha >= beta) break;
+        }
+        return maxEv;
+    }
+    //Minimizer (white)'s turn
+    else{
+        let minEv = +Infinity;
+        for (let i=0; i<whitePiecesAlive.length; i++){
+            let piece = whitePiecesAlive[i];
+            if (piece.getIsAlive() === true){
+                turn = 'white';
+                let hyptMoves = piece.listMoves();
+                //Location of current piece before it "moves"
+                let [x,y] = piece.getLocation();
+                
+                //Try out each hypothetical move
+                for (let i=0; i<hyptMoves.length; i++){
+                    //Location of the new cell before the current piece "moves" to it
+                    let [x2,y2] = hyptMoves[i];
+                    let possiblePiece = board[x2][y2].getItem();
+                    let rightEnPassantCell = null, leftEnPassantCell = null, enPassantedPiece = null;
+
+                    //Check for special case, en passant capture
+                    if (captureByEnPassant(board[x][y], board[x2][y2], piece)){
+                        //Either the adjacent left pawn (if exists) or right pawn (if exists) is captured
+
+                        //left
+                        if (isInBoard([x-1, y]) && !isEmptyAtLocation([x-1, y]) && !piece.isSameTeamAtLocation([x-1, y])){
+                            if (board[x-1][y].getItem().getType() === 'pawn' && board[x-1][y].getItem().displacementOfTwo){
+                                leftEnPassantCell = board[x-1][y];
+                            }
+                        }
+
+                        //right
+                        if (isInBoard([x+1, y]) && !isEmptyAtLocation([x+1, y]) && !piece.isSameTeamAtLocation([x+1, y])){
+                            if (board[x+1][y].getItem().getType() === 'pawn' && board[x+1][y].getItem().displacementOfTwo){
+                                rightEnPassantCell = board[x+1][y];
+                            }
+                        }
+                    }
+
+                    //Assume the piece isn't there
+                    if (possiblePiece){
+                        possiblePiece.setIsAlive(false);
+                    }
+
+                    //Enpassants: we also assume the enpassantCaptured pawn isn't there (will be restored)
+                      if (rightEnPassantCell || leftEnPassantCell){
+                        if (rightEnPassantCell){
+                            enPassantedPiece = rightEnPassantCell.getItem();
+                            enPassantedPiece.setIsAlive(false);
+                            rightEnPassantCell.setItem(null);
+                        }
+                        if (leftEnPassantCell){
+                            enPassantedPiece = leftEnPassantCell.getItem();
+                            enPassantedPiece.setIsAlive(false);
+                            leftEnPassantCell.setItem(null);
+                        }
+                    }
+
+                    //"Move" to the new cell
+                    board[x2][y2].setItem(board[x][y].getItem());
+                    board[x2][y2].getItem().setLocation([x2,y2]);
+                    board[x][y].setItem(null);
+
+                    //After "moving", we go to the next state
+                    //This is the minimizer's evaluation.
+                    let ev = minimax(cellsToSelect, depth-1, alpha, beta, true);
+
+                    //We also need to restore the state from the earlier move
+                    board[x][y].setItem(board[x2][y2].getItem());
+                    board[x][y].getItem().setLocation([x,y]);
+                    board[x2][y2].setItem(null);
+
+                    //Restore a null piece or a valid piece to its original location
+                    if (possiblePiece){
+                        possiblePiece.setIsAlive(true);
+                        board[x2][y2].setItem(possiblePiece);
+                        board[x2][y2].getItem().setLocation([x2,y2])
+                    }
+
+                    //Restore any enPassantcaptured piece to its original location
+                     if (rightEnPassantCell || leftEnPassantCell){
+                        if (rightEnPassantCell){
+                            rightEnPassantCell.setItem(enPassantedPiece);
+                            enPassantedPiece.setIsAlive(true);
+                        }
+                        if (leftEnPassantCell){
+                            leftEnPassantCell.setItem(enPassantedPiece);
+                            enPassantedPiece.setIsAlive(true);
+                        }
+                    }
+
+                    //Minimizer wants to choose the worst evaluation for maximizer
+                    if (ev < minEv){
+                        minEv = ev;
+                    }
+
+                    //Update Beta
+                    beta = Math.min(beta, minEv);
+                    if (alpha >= beta) break;
+                }
+
+                 /*
+                    The moment beta is less than or equal to alpha, we won't need to continue
+                    searching in lower depths because maximizer already has a guaranteed path
+                    that is better (has higher evaluation) from what the minimizer can offer.
+
+                    Refer to the javapoint diagram:
+                    https://www.javatpoint.com/ai-alpha-beta-pruning
+            
+                    Specifically the diagram where the right subtree of node C gets cancelled out.
+                    I also included this check here instead of just in the hypothetical moves loop,
+                    to avoid unnecessary recomputation.
+                */
+                if (alpha >= beta) break;
+            }
+        }
+        return minEv;
+    }
+}
+
+//Calculates static evaluation of current hypothetical board
+//We will try seeing if the net evaluation (black's position - white's position) is better or worse
+//We do (black - white) because black wants to maximize its chance of getting the highest evaluation
+//while white wants to minimize black's evaluation
+function evaluateBoard(){
+    var whiteEv = 0;
+    whitePiecesAlive.forEach(piece => {
+        let [x,y] = piece.getLocation();
+        if (piece.getType() === 'pawn') whiteEv +=  wPawnEv[x][y];
+        if (piece.getType() === 'knight') whiteEv +=  wKnightEv[x][y];
+        if (piece.getType() === 'bishop') whiteEv +=  wBishopEv[x][y];
+        if (piece.getType() === 'rook') whiteEv +=  wRookEv[x][y];
+        if (piece.getType() === 'king') whiteEv +=  wKingMidEv[x][y];
+        if (piece.getType() === 'queen') whiteEv +=  wQueenEv[x][y];
+    })
+   
+    var blackEv = 0;
+    blackPiecesAlive.forEach(piece => {
+        let [x,y] = piece.getLocation();
+        if (piece.getType() === 'pawn') blackEv +=  bPawnEv[x][y];
+        if (piece.getType() === 'knight') blackEv +=  bKnightEv[x][y];
+        if (piece.getType() === 'bishop') blackEv +=  bBishopEv[x][y];
+        if (piece.getType() === 'rook') blackEv +=  bRookEv[x][y];
+        if (piece.getType() === 'king') blackEv +=  bKingMidEv[x][y];
+        if (piece.getType() === 'queen') blackEv +=  bQueenEv[x][y];
+    })
+
+    return (blackEv - whiteEv);
+}
+
 function isDrawByThreefoldRepetition(){
     var samePositionIndex = positionExists();
     if (samePositionIndex !== -1){
@@ -334,11 +650,11 @@ function isDrawByInsufficientMaterial(){
 
         if (wPiece === null || wPiece.getType() === 'bishop' || wPiece.getType() === 'knight'){
             //White has double knights and black has lone king, then draw.
-            if (wPiece.getType() === 'knight' && wPieceTwo && wPieceTwo.getType() === 'knight'){
+            if (wPieceTwo && wPieceTwo.getType() === 'knight' && wPiece.getType() === 'knight'){
                 if (bPiece === null) isDraw = true;
             }
             //Black has double knights and white has lone king, then draw.
-            else if (bPiece.getType() === 'knight' && bPieceTwo && bPieceTwo.getType() === 'knight'){
+            else if (bPieceTwo && bPieceTwo.getType() === 'knight' && bPiece.getType() === 'knight'){
                 if (wPiece === null) isDraw = true;
             }
             //White has a lone king or two pieces either a bishop or knight and a king
@@ -353,7 +669,7 @@ function isDrawByInsufficientMaterial(){
     return isDraw;
 }
 
-function endTurn(){
+    function endTurn(){
     //The tracker activtes immediately if promotion phase is set to false
     if (!promotionPhase) updateTracker();
 
@@ -429,6 +745,9 @@ function endTurn(){
 //Replace the content of newCell by those of oldCell
 //Then set oldCell to an empty cell.
 function movePiece(oldCell, newCell){
+    // console.log(oldCell);
+    // console.log(newCell);
+
     var piece = oldCell.getItem();
     var type = piece.getType();
     var castle = canCastle(oldCell, newCell, piece);
@@ -482,9 +801,9 @@ function move(oldCell, newCell){
         eatAtCell(newCell);
         //piece eaten, reset number of moves count
         whiteMovesCount = 0;
-        console.log("White moves count: " + whiteMovesCount)
+       // console.log("White moves count: " + whiteMovesCount)
         blackMovesCount = 0;
-        console.log("Black moves count: " + blackMovesCount)
+        //console.log("Black moves count: " + blackMovesCount)
     }
     else{
         //pieces not eaten, check if piece is a pawn
@@ -493,9 +812,9 @@ function move(oldCell, newCell){
         // if no, continue adding one
         if (oldCell.getItem().getType() === 'pawn'){
             whiteMovesCount = 0;
-            console.log("White moves count: " + whiteMovesCount)
+           // console.log("White moves count: " + whiteMovesCount)
             blackMovesCount = 0;
-            console.log("Black moves count: " + blackMovesCount)
+            //console.log("Black moves count: " + blackMovesCount)
         }
         else{
             //no pawns moved, move++;
@@ -506,15 +825,15 @@ function move(oldCell, newCell){
             else{
                 blackMovesCount++;
             }
-            console.log("White moves count: " + whiteMovesCount)
-            console.log("Black moves count: " + blackMovesCount)
+           // console.log("White moves count: " + whiteMovesCount)
+           // console.log("Black moves count: " + blackMovesCount)
         }
     }
 
     // set cells to their appropriate items
     newCell.setItem(oldCell.getItem());
     oldCell.setItem(null);
-
+    
     // adds chess piece display
     newCell.getElement().appendChild(newCell.getItem().getElement());
 
@@ -795,6 +1114,11 @@ function displayPawnPromoSelection(cell){
     promotionSelection.appendChild(rookButton);
     promotionSelection.appendChild(bishopButton);
     promotionSelection.appendChild(knightButton);
+
+    //The AI chooses queen (for now) as promotion. Since AI can't click, we need to help it.
+    if (turn === 'black'){
+        selected("queen", color, cell);
+    }
 }
 
 
@@ -830,6 +1154,13 @@ function selected(type, color, cell){
     }
     promotionPhase = false;
     updateTracker();
+    endTurn();
+
+    //The bot cannot move until promotion phase ends for white
+    if (turn === 'black'){
+        botMoves();
+        endTurn();
+    }
 }
 
 function displayGameEnded(condition){

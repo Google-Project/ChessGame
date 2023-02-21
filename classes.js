@@ -574,65 +574,69 @@ class King extends ChessPiece{
             Also, the king must not be in check in the MIDDLE of castling. This is very important.
 
             Note that castling requires clicking the king then to the empty cell, not clicking on the rook to the empty cell.
+            Also, the king cannot castle when it is already in check.
         */
-            var thisPiece = turn === 'white' ? whiteKing : blackKing;
-            //If the king has not moved
-            if (thisPiece.firstMove){
-                var [x, y] = this.getLocation();
-                var displacement = 1;
-                //Check if king can move to right side for castling
-                for (displacement; displacement<=3; displacement++){
-                    let [x2, y2] = [x, y+displacement];
+            //Castling should only be possible in the current player, the current king's, turn.
+            if (this.getColor() === turn){
+                let thisPiece = turn === 'white' ? whiteKing : blackKing;
+                //If the king has not moved and not already in check
+                if (thisPiece.firstMove && !thisPiece.isInCheck()){
+                    var [x, y] = this.getLocation();
+                    var displacement = 1;
+                    //Check if king can move to right side for castling
+                    for (displacement; displacement<=3; displacement++){
+                        let [x2, y2] = [x, y+displacement];
 
-                    //If the location is invalid
-                    if (!isInBoard([x2, y2])) break;
+                        //If the location is invalid
+                        if (!isInBoard([x2, y2])) break;
 
-                    //Possible right rook at default location
-                    if (displacement === 3){
-                        let pieceAtNewCell = board[x2][y2].getItem();
-                        //If right rook exists, in the same team as king, and hasn't moved, then we have a castling move 
-                        //(we already checked the cells in between the king and the rook in the 'else' statement below)
-                        if (this.isSameTeamAtLocation([x2, y2]) && pieceAtNewCell.getType() === 'rook' && pieceAtNewCell.firstMove){
-                            possibleMoves.push([x2, y2-1]);
+                        //Possible right rook at default location
+                        if (displacement === 3){
+                            let pieceAtNewCell = board[x2][y2].getItem();
+                            //If right rook exists, in the same team as king, and hasn't moved, then we have a castling move 
+                            //(we already checked the cells in between the king and the rook in the 'else' statement below)
+                            if (this.isSameTeamAtLocation([x2, y2]) && pieceAtNewCell.getType() === 'rook' && pieceAtNewCell.firstMove){
+                                possibleMoves.push([x2, y2-1]);
+                            }
                         }
-                    }
-                    //Check for empty cells in between
-                    else{
-                        //If the cell is not empty or the cell is empty and the king gets checked there hypothetically, then no castling
-                        if (!isEmptyAtLocation([x2, y2]) || (isEmptyAtLocation[x2, y2] && !this.canAddHyptMove([x2, y2]))) break;
-                    }
-                } 
-
-                //reset displacement
-                displacement = 1;
-
-                //Check if king can move to left side for castling. 
-                for (displacement; displacement<=4; displacement++){
-                    let [x2, y2] = [x, y-displacement];
-
-                    //If the location is invalid
-                    if (!isInBoard([x2, y2])) break;
-
-                    //Possible left rook at default location
-                    if (displacement === 4){
-                        let pieceAtNewCell = board[x2][y2].getItem();;
-                        //If left rook exists, in the same team as king, and hasn't moved, then we have a castling move 
-                        //(we already checked the cells in between the king and the rook in the 'else' statement below)
-                        if (this.isSameTeamAtLocation([x2, y2]) && pieceAtNewCell.getType() === 'rook' && pieceAtNewCell.firstMove){
-                            possibleMoves.push([x2, y2+2]);
+                        //Check for empty cells in between
+                        else{
+                            //If the cell is not empty or the cell is empty and the king gets checked there hypothetically, then no castling
+                            if (!isEmptyAtLocation([x2, y2]) || (isEmptyAtLocation[x2, y2] && !this.canAddHyptMove([x2, y2]))) break;
                         }
-                    }
-                    //The cell next to the rook just need to be empty, no hypothetical checks needed because 
-                    //after castling, the king won't land on or pass that cell.
-                    else if (displacement === 3){
-                        if (!isEmptyAtLocation([x2, y2])) break;
-                    }
-                    //Check for empty cells in between
-                    else{
-                        //If the cell is not empty or the cell is empty and the king gets checked there hypothetically, then no castling
-                        if (!isEmptyAtLocation([x2, y2]) || (isEmptyAtLocation[x2, y2] && !this.canAddHyptMove([x2, y2]))) break;
-                    }
-                } 
+                    } 
+
+                    //reset displacement
+                    displacement = 1;
+
+                    //Check if king can move to left side for castling. 
+                    for (displacement; displacement<=4; displacement++){
+                        let [x2, y2] = [x, y-displacement];
+
+                        //If the location is invalid
+                        if (!isInBoard([x2, y2])) break;
+
+                        //Possible left rook at default location
+                        if (displacement === 4){
+                            let pieceAtNewCell = board[x2][y2].getItem();;
+                            //If left rook exists, in the same team as king, and hasn't moved, then we have a castling move 
+                            //(we already checked the cells in between the king and the rook in the 'else' statement below)
+                            if (this.isSameTeamAtLocation([x2, y2]) && pieceAtNewCell.getType() === 'rook' && pieceAtNewCell.firstMove){
+                                possibleMoves.push([x2, y2+2]);
+                            }
+                        }
+                        //The cell next to the rook just need to be empty, no hypothetical checks needed because 
+                        //after castling, the king won't land on or pass that cell.
+                        else if (displacement === 3){
+                            if (!isEmptyAtLocation([x2, y2])) break;
+                        }
+                        //Check for empty cells in between
+                        else{
+                            //If the cell is not empty or the cell is empty and the king gets checked there hypothetically, then no castling
+                            if (!isEmptyAtLocation([x2, y2]) || (isEmptyAtLocation[x2, y2] && !this.canAddHyptMove([x2, y2]))) break;
+                        }
+                    } 
+                }
             }        
         return possibleMoves;
     }
