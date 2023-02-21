@@ -8,7 +8,7 @@ whitePiecesAlive = [];
 blackPiecesDead = [];
 whitePiecesDead = [];
 turn = "white";
-searchDepth = 4;
+searchDepth = 6;
 
 //counter for number of moves made that are not cpatures/pawn moves
 //seperate counter for white and black, both need to reach 50 to force draw
@@ -592,23 +592,23 @@ function evaluateBoard(){
     var whiteEv = 0;
     whitePiecesAlive.forEach(piece => {
         let [x,y] = piece.getLocation();
-        if (piece.getType() === 'pawn') whiteEv +=  wPawnEv[x][y];
-        if (piece.getType() === 'knight') whiteEv +=  wKnightEv[x][y];
-        if (piece.getType() === 'bishop') whiteEv +=  wBishopEv[x][y];
-        if (piece.getType() === 'rook') whiteEv +=  wRookEv[x][y];
-        if (piece.getType() === 'king') whiteEv +=  wKingMidEv[x][y];
-        if (piece.getType() === 'queen') whiteEv +=  wQueenEv[x][y];
+        if (piece.getType() === 'pawn') whiteEv +=  wPawnEv;
+        if (piece.getType() === 'knight') whiteEv +=  wKnightEv;
+        if (piece.getType() === 'bishop') whiteEv +=  wBishopEv;
+        if (piece.getType() === 'rook') whiteEv +=  wRookEv;
+        if (piece.getType() === 'king') whiteEv +=  wKingMidEv;
+        if (piece.getType() === 'queen') whiteEv +=  wQueenEv;
     })
    
     var blackEv = 0;
     blackPiecesAlive.forEach(piece => {
         let [x,y] = piece.getLocation();
-        if (piece.getType() === 'pawn') blackEv +=  bPawnEv[x][y];
-        if (piece.getType() === 'knight') blackEv +=  bKnightEv[x][y];
-        if (piece.getType() === 'bishop') blackEv +=  bBishopEv[x][y];
-        if (piece.getType() === 'rook') blackEv +=  bRookEv[x][y];
-        if (piece.getType() === 'king') blackEv +=  bKingMidEv[x][y];
-        if (piece.getType() === 'queen') blackEv +=  bQueenEv[x][y];
+        if (piece.getType() === 'pawn') blackEv +=  bPawnEv;
+        if (piece.getType() === 'knight') blackEv +=  bKnightEv;
+        if (piece.getType() === 'bishop') blackEv +=  bBishopEv;
+        if (piece.getType() === 'rook') blackEv +=  bRookEv;
+        if (piece.getType() === 'king') blackEv +=  bKingMidEv;
+        if (piece.getType() === 'queen') blackEv +=  bQueenEv;
     })
 
     return (blackEv - whiteEv);
