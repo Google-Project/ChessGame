@@ -341,8 +341,6 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer, turn){
                 //Location of current piece before it "moves"
                 let [x,y] = piece.getLocation();
 
-                if (piece.getType() === 'pawn') hyptMoves = [[4,1]];
-                console.log(hyptMoves);
                 //Try out each hypothetical move
                 for (let i=0; i<hyptMoves.length; i++){
                     //Location of the new cell before the current piece "moves" to it
@@ -350,20 +348,11 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer, turn){
                     let possiblePiece = board[x2][y2].getItem();
                     let rightEnPassantCell = null, leftEnPassantCell = null, enPassantedPiece = null;
 
+                    //Check if the first move is originally true or false
+                    let firstMove = piece.firstMove;
+
                     if (piece.getType() === 'pawn' || piece.getType() === 'rook' || piece.getType() === 'king'){
-                        //If pawn "moves" two steps forward, set firstMove to false (restored later)
-                        if (piece.getType() === 'pawn'){
-                            if (Math.abs(x2 - x) === 2) piece.firstMove = false;
-                        }else{
-                            piece.firstMove = false;
-                        }
-                    }
-                    if (x2 === 4 && y2 === 1){
-                        console.log([4,1]);
-                        console.log(turn);
-                        if (captureByEnPassant(board[x][y], board[x2][y2], piece)){
-                            console.log('true');
-                        }
+                        if (firstMove) piece.firstMove = false;
                     }
 
                     //Check for special case, en passant capture
@@ -450,12 +439,7 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer, turn){
                     }
 
                     if (piece.getType() === 'pawn' || piece.getType() === 'rook' || piece.getType() === 'king'){
-                        //If pawn "moves" two steps forward, set firstMove to false (restored later)
-                        if (piece.getType() === 'pawn'){
-                            if (Math.abs(x2 - x) === 2) piece.firstMove = true;
-                        }else{
-                            piece.firstMove = true;
-                        }
+                        if (firstMove) piece.firstMove = true;
                     }
 
                     //If the minimizer's evaluation is advantageous to the bot, we update maxEv and maybe alpha
@@ -518,14 +502,10 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer, turn){
                     let [x2,y2] = hyptMoves[i];
                     let possiblePiece = board[x2][y2].getItem();
                     let rightEnPassantCell = null, leftEnPassantCell = null, enPassantedPiece = null;
+                    let firstMove = piece.firstMove;
 
                     if (piece.getType() === 'pawn' || piece.getType() === 'rook' || piece.getType() === 'king'){
-                        //If pawn "moves" two steps forward, set firstMove to false (restored later)
-                        if (piece.getType() === 'pawn'){
-                            if (Math.abs(x2 - x) === 2)piece.firstMove = false;
-                        }else{
-                            piece.firstMove = false;
-                        }
+                        if (firstMove) piece.firstMove = false;
                     }
 
                     
@@ -607,11 +587,7 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer, turn){
 
                     if (piece.getType() === 'pawn' || piece.getType() === 'rook' || piece.getType() === 'king'){
                         //If pawn "moves" two steps forward, set firstMove to false (restored later)
-                        if (piece.getType() === 'pawn'){
-                            if (Math.abs(x2 - x) === 2)piece.firstMove = false;
-                        }else{
-                            piece.firstMove = false;
-                        }
+                        if (firstMove) piece.firstMove = true;
                     }
 
                     //Minimizer wants to choose the worst evaluation for maximizer
@@ -958,7 +934,6 @@ function canCastle(oldCell, newCell, piece){
 //Returns true if enpassant capture is detected
 function captureByEnPassant(oldCell, newCell, piece){
     if (piece.getType() === 'pawn'){
-        if (piece.getColor() === 'black') console.log(newCell);
         var enPassantCapture = false;
         //En Passant Capture
         /*
@@ -969,11 +944,6 @@ function captureByEnPassant(oldCell, newCell, piece){
         if (isEmptyAtLocation(newCell.getLocation())){
             let displacement = turn === 'white' ? 1 : -1;
             let captureLocation = [newCell.getLocation()[0] + displacement, newCell.getLocation()[1]];
-            if (piece.getColor() === 'black' && captureLocation[0] === 3 && captureLocation[1] === 1){
-                console.log('SPECIAL MESSAGE');
-                
-
-            }
             if (isInBoard(captureLocation)){
                 let captureCell = board[newCell.getLocation()[0] + displacement][newCell.getLocation()[1]];
                 if (!isEmptyAtLocation(captureLocation) && !piece.isSameTeamAtLocation(captureLocation) && captureCell.getItem().getType() === 'pawn'){
@@ -1042,14 +1012,37 @@ function initializePiece(location, color, type){
 
 
 function initializeModels(){
-    //Pawn
-    initializePiece(board[3][0].getLocation(), 'black', 'pawn');
-    initializePiece(board[5][1].getLocation(), 'white', 'pawn');
+   //Pawns
+   for (let c=0; c<board[1].length; c++){
+    initializePiece([1,c], 'black', 'pawn');
+    initializePiece([6,c], 'white', 'pawn');
+}
 
-    //Kings
-    initializePiece(board[0][4].getLocation(), 'black', 'king');
-    initializePiece(board[7][4].getLocation(), 'white', 'king');
+//Rooks
+initializePiece(board[0][0].getLocation(), 'black', 'rook');
+initializePiece(board[0][7].getLocation(), 'black', 'rook');
+initializePiece(board[7][0].getLocation(), 'white', 'rook');
+initializePiece(board[7][7].getLocation(), 'white', 'rook');
 
+//Knights
+initializePiece(board[0][1].getLocation(), 'black', 'knight');
+initializePiece(board[0][6].getLocation(), 'black', 'knight');
+initializePiece(board[7][1].getLocation(), 'white', 'knight');
+initializePiece(board[7][6].getLocation(), 'white', 'knight');
+
+//Bishops
+initializePiece(board[0][2].getLocation(), 'black', 'bishop');
+initializePiece(board[0][5].getLocation(), 'black', 'bishop');
+initializePiece(board[7][2].getLocation(), 'white', 'bishop');
+initializePiece(board[7][5].getLocation(), 'white', 'bishop');
+
+//Kings
+initializePiece(board[0][4].getLocation(), 'black', 'king');
+initializePiece(board[7][4].getLocation(), 'white', 'king');
+
+//Queens
+initializePiece(board[0][3].getLocation(), 'black', 'queen');
+initializePiece(board[7][3].getLocation(), 'white', 'queen');
 
 }
 
