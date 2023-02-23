@@ -425,8 +425,7 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer, turn){
                     if (piece.getType() === 'pawn' || piece.getType() === 'rook' || piece.getType() === 'king'){
                         if (firstMove) piece.firstMove = true;
                     }
-
-                    if (piece.getType() === 'pawn') ev = 1000;
+                    
                     //If the minimizer's evaluation is advantageous to the bot, we update maxEv and maybe alpha
                     if (ev > maxEv){
                          maxEv = ev;              
