@@ -85,7 +85,8 @@ function updateTracker(){
         let hyptMoves = {};
         let counter = 1;
 
-        whitePiecesAlive.forEach(function(piece){
+        for (let i = 0; i < whitePiecesAlive.length; i++){
+            let piece = whitePiecesAlive[i];
             let key = 'w' + piece.getType();
             let [x,y] = piece.getLocation();
 
@@ -95,33 +96,34 @@ function updateTracker(){
             if (!location[key][x][y]) location[key][x][y] = true;
 
             //Update hypothetical moves
-            piece.listMoves().forEach(function(move){
-                let [x,y] = move;
-
+            let pieceMoves = piece.listMoves();
+            for (let j = 0; j < pieceMoves.length; j++){
+                let [x,y] = pieceMoves[j];
                 if (!hyptMoves[key]) hyptMoves[key] = {};
                 if (!hyptMoves[key][x]) hyptMoves[key][x] = {};
                 if (!hyptMoves[key][x][y]) hyptMoves[key][x][y] = true;
-            });
-        })
+            }
+        }
 
-        blackPiecesAlive.forEach(function(piece){
+        for (let i = 0; i < blackPiecesAlive.length; i++){
+            let piece = blackPiecesAlive[i];
             let key = 'b' + piece.getType();
             let [x,y] = piece.getLocation();
-
+    
             //New location
             if (!location[key]) location[key] = {};
             if (!location[key][x]) location[key][x] = {};
             if (!location[key][x][y]) location[key][x][y] = true;
-
+    
             //Updae hypothetical moves
-            piece.listMoves().forEach(function(move){
-                let [x,y] = move;
-
+            let pieceMoves = piece.listMoves();
+            for (let j = 0; j < pieceMoves.length; j++){
+                let [x,y] = pieceMoves[j];
                 if (!hyptMoves[key]) hyptMoves[key] = {};
                 if (!hyptMoves[key][x]) hyptMoves[key][x] = {};
                 if (!hyptMoves[key][x][y]) hyptMoves[key][x][y] = true;
-            });
-        })
+            }
+        }
 
             
         positionTracker.push([location, hyptMoves, counter]);
@@ -590,7 +592,8 @@ function minimax(cellsToSelect, depth, alpha, beta, maximizer){
 //while white wants to minimize black's evaluation
 function evaluateBoard(){
     var whiteEv = 0;
-    whitePiecesAlive.forEach(piece => {
+    for (let i = 0; i < whitePiecesAlive.length; i++){
+        let piece = whitePiecesAlive[i];
         let [x,y] = piece.getLocation();
         if (piece.getType() === 'pawn') whiteEv +=  wPawnEv[x][y];
         if (piece.getType() === 'knight') whiteEv +=  wKnightEv[x][y];
@@ -598,10 +601,11 @@ function evaluateBoard(){
         if (piece.getType() === 'rook') whiteEv +=  wRookEv[x][y];
         if (piece.getType() === 'king') whiteEv +=  wKingMidEv[x][y];
         if (piece.getType() === 'queen') whiteEv +=  wQueenEv[x][y];
-    })
+    }
    
     var blackEv = 0;
-    blackPiecesAlive.forEach(piece => {
+    for (let i = 0; i < blackPiecesAlive.length; i++){
+        let piece = blackPiecesAlive[i];
         let [x,y] = piece.getLocation();
         if (piece.getType() === 'pawn') blackEv +=  bPawnEv[x][y];
         if (piece.getType() === 'knight') blackEv +=  bKnightEv[x][y];
@@ -609,7 +613,7 @@ function evaluateBoard(){
         if (piece.getType() === 'rook') blackEv +=  bRookEv[x][y];
         if (piece.getType() === 'king') blackEv +=  bKingMidEv[x][y];
         if (piece.getType() === 'queen') blackEv +=  bQueenEv[x][y];
-    })
+    }
 
     return (blackEv - whiteEv);
 }
@@ -631,22 +635,24 @@ function isDrawByInsufficientMaterial(){
     if (whitePiecesAlive.length <= 3 && blackPiecesAlive.length <= 3){
         let wPiece = null;
         let wPieceTwo = null;
-        whitePiecesAlive.forEach(function(piece){
+        for (let i = 0; i < whitePiecesAlive.length; i++){
+            let piece = whitePiecesAlive[i];
             if (piece.getType() !== 'king'){
                 if (wPiece === null) wPiece = piece;
                 else if (wPieceTwo === null) wPieceTwo = piece;
             }
-        });
+        }
 
       
         let bPiece = null;
         let bPieceTwo = null;
-        blackPiecesAlive.forEach(function(piece){
+        for (let i = 0; i < blackPiecesAlive.length; i++){
+            let piece = blackPiecesAlive[i];
             if (piece.getType() !== 'king'){
                 if (bPiece === null) bPiece = piece;
                 else if (bPieceTwo === null) bPieceTwo = piece;
             }
-        });
+        }
 
         if (wPiece === null || wPiece.getType() === 'bishop' || wPiece.getType() === 'knight'){
             //White has double knights and black has lone king, then draw.
@@ -1013,19 +1019,22 @@ function startTimer(){
 function highlightPossibleMoves(cell){
     var piece = cell.getItem();
     if (piece!=null){
-        piece.listMoves().forEach(function(location){
+        let pieceMoves = piece.listMoves();
+        for (let i = 0; i < pieceMoves.length; i++){
+            let location = pieceMoves[i];
             let td = board[location[0]][location[1]].getElement();
             td.style.backgroundColor = "blue";
-        });
+        }
     }
 }
 
 // Will unhighlight table cells given an array of locations
 function unhighlightLocations(arr){
-    arr.forEach(function(location){
+    for (let i = 0; i < arr.length; i++){
+        let location = arr[i];
         let td = board[location[0]][location[1]].getElement();
         td.style.backgroundColor = "";
-    });
+    }
 }
 
 // Returns true if the location is within the bounds of the board
@@ -1045,10 +1054,11 @@ function isEmptyAtLocation(location){
 
 //Highlights available moves that a chess piece can move to
 function highlightArrayOfLocations(arr){
-    arr.forEach(function(location){
+    for (let i = 0; i < arr.length; i++){
+        let location = arr[i];
         let td = board[location[0]][location[1]].getElement();
         td.style.backgroundColor = "blue";
-    });
+    }
 }
 
 // eats the piece at given cell

@@ -234,10 +234,13 @@ class ChessPiece{
     allPossibleEnemyMoves(){
         var output = {};
         var enemypieces = this.getColor() === "white" ? blackPiecesAlive : whitePiecesAlive;
-        enemypieces.forEach(function(piece){
+        for (let i = 0; i < enemypieces.length; i++){
+            let piece = enemypieces[i];
             //Checks if a piece is alive (used in Hypothetical Moves)
             if (piece.getIsAlive()){
-                piece.possibleMoves().forEach(function(move){
+                let possibleMoves = piece.possibleMoves();
+                for (let j = 0; j < possibleMoves.length; j++){
+                    let move = possibleMoves[j];
                     let [x,y] = move;
                     //If the current x is not defined
                     if (!output[x]){
@@ -247,9 +250,9 @@ class ChessPiece{
                     if (!output[x][y]){
                         output[x][y] = true;
                     }
-                });
+                }
             }
-        });
+        }
 
         //console.log(output);
         return output;
